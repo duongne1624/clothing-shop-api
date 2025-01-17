@@ -1,0 +1,12 @@
+{
+  "name": "shopping-api",
+  "version": "1.0.0",
+  "description": "ThaiDuowng shop api",
+  "main": "src/server.js",
+  "author": "thaiduowng",
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
