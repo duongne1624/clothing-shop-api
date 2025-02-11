@@ -3,21 +3,23 @@ import express from 'express'
 import exitHook from 'async-exit-hook'
 import { CONNECT_DB, GET_DB, CLOSE_DB } from '~/config/mongodb.js'
 import { env } from '~/config/environment.js'
+import { APIs_V1 } from '~/routes/v1'
+import { errorHandlingMiddleware } from '~/middlewares/errorHandlingMiddleware'
 
 const START_SERVER = () => {
   const app = express()
 
-  const hostname = env.APP_HOST
-  const port = env.APP_PORT
+  //Enable req.body json data
+  app.use(express.json())
 
-  app.get('/', async(req, res) => {
-    console.log(await GET_DB().listCollections().toArray())
+  //Use APIs V1
+  app.use('/v1', APIs_V1)
 
-    res.end('<h1>Hello World!</h1><hr>')
-  })
+  // Middleware xử lý lỗi tập trung
+  app.use(errorHandlingMiddleware)
 
-  app.listen(port, hostname, () => {
-    console.log(`3. Backend Server is running successfully at http://${hostname}:${port}/`)
+  app.listen(env.APP_PORT, env.APP_HOST, () => {
+    console.log(`3. Backend Server is running successfully at http://${env.APP_HOST}:${env.APP_PORT}/`)
   })
 
   exitHook(() => {
@@ -40,12 +42,3 @@ const START_SERVER = () => {
     console.error(error)
   }
 })()
-
-// console.log('1. Connecting to MongoDB Cloud Atlas...')
-// CONNECT_DB()
-//   .then(() => console.log('2. Connected to MongoDB Cloud Atlas!'))
-//   .then(() => START_SERVER())
-//   .catch(error => {
-//     console.error('Error connecting to MongoDB Cloud Atlas:', error)
-//     process.exit(0)
-//   })
