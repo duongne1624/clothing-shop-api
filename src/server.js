@@ -1,7 +1,9 @@
 /* eslint-disable no-console */
 import express from 'express'
+import cors from 'cors'
+import { corsOptions } from '~/config/cors'
 import exitHook from 'async-exit-hook'
-import { CONNECT_DB, GET_DB, CLOSE_DB } from '~/config/mongodb.js'
+import { CONNECT_DB, CLOSE_DB } from '~/config/mongodb.js'
 import { env } from '~/config/environment.js'
 import { APIs_V1 } from '~/routes/v1'
 import { errorHandlingMiddleware } from '~/middlewares/errorHandlingMiddleware'
@@ -9,10 +11,13 @@ import { errorHandlingMiddleware } from '~/middlewares/errorHandlingMiddleware'
 const START_SERVER = () => {
   const app = express()
 
-  //Enable req.body json data
+  // Cors
+  app.use(cors(corsOptions))
+
+  // Enable req.body json data
   app.use(express.json())
 
-  //Use APIs V1
+  // Use APIs V1
   app.use('/v1', APIs_V1)
 
   // Middleware xử lý lỗi tập trung

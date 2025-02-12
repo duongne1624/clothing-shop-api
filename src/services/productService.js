@@ -4,6 +4,16 @@
  */
 
 import { slugify } from '~/utils/formatters'
+import { productModel } from '~/models/productModel'
+import ApiError from '~/utils/ApiError'
+import { StatusCodes } from 'http-status-codes'
+
+const getAll = async () => {
+  try {
+    const products = await productModel.getAll()
+    return products
+  } catch (error) { throw error }
+}
 
 const createNew = async (reqBody) => {
   try {
@@ -13,11 +23,28 @@ const createNew = async (reqBody) => {
       slug: slugify(reqBody.name)
     }
 
+    //Gọi tới tầng Model để xử lí lưu bản ghi vào trong Database
+    const createdProduct = await productModel.createNew(newProduct)
+
+    //Lấy bản ghi sau khi gọi(tùy mục đích dự án có cần bước này hay không)
+    const getNewProduct = await productModel.findOneById(createdProduct.insertedId.toString())
+
     // Trả về từ Service luôn phải có return
-    return newProduct
+    return getNewProduct
+  } catch (error) { throw error }
+}
+
+const getDetails = async (productId) => {
+  try {
+    const product = await productModel.getDetails(productId)
+    if (!product) throw new ApiError(StatusCodes.NOT_FOUND, 'Product not found')
+
+    return product
   } catch (error) { throw error }
 }
 
 export const productSevice = {
-  createNew
+  getAll,
+  createNew,
+  getDetails
 }

@@ -4,6 +4,13 @@
 import { StatusCodes } from 'http-status-codes'
 import { productSevice } from '~/services/productService'
 
+const getAll = async (req, res, next) => {
+  try {
+    const products = await productSevice.getAll()
+
+    res.status(StatusCodes.OK).json(products)
+  } catch (error) { next(error) }
+}
 
 const createNew = async (req, res, next) => {
   try {
@@ -22,6 +29,17 @@ const createNew = async (req, res, next) => {
   } catch (error) { next(error) }
 }
 
+const getDetails = async (req, res, next) => {
+  try {
+    const productId = req.params.id
+    const product = await productSevice.getDetails(productId)
+
+    res.status(StatusCodes.OK).json(product)
+  } catch (error) { next(error) }
+}
+
 export const productController = {
-  createNew
+  getAll,
+  createNew,
+  getDetails
 }
