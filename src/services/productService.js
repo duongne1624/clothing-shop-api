@@ -43,8 +43,18 @@ const getDetails = async (productId) => {
   } catch (error) { throw error }
 }
 
+const getDetailsBySlug = async (productSlug) => {
+  try {
+    const product = await productModel.getDetailsBySlug(productSlug)
+    if (!product) throw new ApiError(StatusCodes.NOT_FOUND, 'Product not found')
+
+    return product
+  } catch (error) { throw error }
+}
+
 export const productSevice = {
   getAll,
   createNew,
-  getDetails
+  getDetails,
+  getDetailsBySlug
 }

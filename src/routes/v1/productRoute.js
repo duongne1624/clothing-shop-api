@@ -16,5 +16,8 @@ Router.route('/:id')
   // .put(productController.updateProducts)
   // .delete(productController.deleteProducts)
 
+Router.route('/GetDetailsBySlug/:slug')
+  // Get product details by slug
+  .get(productController.getDetailsBySlug)
 
 export const productRoute = Router

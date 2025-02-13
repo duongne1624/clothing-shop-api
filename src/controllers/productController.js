@@ -38,8 +38,18 @@ const getDetails = async (req, res, next) => {
   } catch (error) { next(error) }
 }
 
+const getDetailsBySlug = async (req, res, next) => {
+  try {
+    const productSlug = req.params.slug
+    const product = await productSevice.getDetailsBySlug(productSlug)
+
+    res.status(StatusCodes.OK).json(product)
+  } catch (error) { next(error) }
+}
+
 export const productController = {
   getAll,
   createNew,
-  getDetails
+  getDetails,
+  getDetailsBySlug
 }

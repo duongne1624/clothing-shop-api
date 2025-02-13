@@ -66,11 +66,18 @@ const getDetails = async (id) => {
   } catch (error) { throw new Error(error) }
 }
 
+const getDetailsBySlug = async (slug) => {
+  try {
+    return await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({ slug: slug })
+  } catch (error) { throw new Error(error) }
+}
+
 export const productModel = {
   name: PRODUCT_COLLECTION_NAME,
   schema: PRODUCT_COLLECTION_SCHEMA,
   getAll,
   createNew,
   findOneById,
-  getDetails
+  getDetails,
+  getDetailsBySlug
 }
