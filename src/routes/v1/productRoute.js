@@ -5,9 +5,7 @@ import { productController } from '~/controllers/productController'
 const Router = express.Router()
 
 Router.route('/')
-  // Get all products
   .get(productController.getAll)
-  // Create new product
   .post(productValidation.createNew, productController.createNew)
 
 Router.route('/:id')
