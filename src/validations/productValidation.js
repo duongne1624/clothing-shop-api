@@ -31,7 +31,7 @@ const createNew = async (req, res, next) => {
       'number.max': 'Price must be at most {#limit}'
     }),
 
-    categoryId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE).messages({
+    categoryId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE).messages({
       'any.required': 'Category ID is required'
     }),
 

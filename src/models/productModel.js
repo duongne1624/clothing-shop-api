@@ -1,20 +1,21 @@
 /**
- * Updated by ThaiDuowng's author on Feb 12 2025
+ * Updated by ThaiDuowng's author on Feb 16 2025
  */
 
+import { GET_DB } from '../config/mongodb'
 import Joi from 'joi'
 import { ObjectId } from 'mongodb'
-import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
-import { GET_DB } from '~/config/mongodb'
 
-// Define Collection (Name & Schema)
+// Định nghĩa collection name
 const PRODUCT_COLLECTION_NAME = 'products'
+
+// Định nghĩa schema với Joi
 const PRODUCT_COLLECTION_SCHEMA = Joi.object({
   name: Joi.string().required().min(3).max(100).trim().strict(),
   slug: Joi.string().required().min(3).trim().strict(),
   description: Joi.string().min(3).max(256).trim().strict().default(''),
   price: Joi.number().required().min(1000).max(1000000000),
-  categoryId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+  categoryId: Joi.string(),
   stock: Joi.number().required().min(0),
   sizes: Joi.array().items(Joi.string().valid('S', 'M', 'L', 'XL', 'XXL')).default([]),
 
@@ -27,7 +28,7 @@ const PRODUCT_COLLECTION_SCHEMA = Joi.object({
   ).default([]),
 
   offerIds: Joi.array().items(
-    Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
+    Joi.string().pattern(/^[0-9a-fA-F]{24}$/).message('Invalid ObjectId')
   ).default([]),
 
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
@@ -35,49 +36,118 @@ const PRODUCT_COLLECTION_SCHEMA = Joi.object({
   _destroy: Joi.boolean().default(false)
 })
 
-const getAll = async () => {
-  try {
-    return await GET_DB().collection(PRODUCT_COLLECTION_NAME).find().toArray()
-  } catch (error) { throw new Error(error) }
+//Class product
+class Product {
+  constructor(data) {
+    this.id = data._id ? new ObjectId(data._id) : null
+    this.name = data.name
+    this.slug = data.slug
+    this.description = data.description || ''
+    this.price = data.price
+    this.categoryId = data.categoryId
+    this.stock = data.stock
+    this.sizes = data.sizes || []
+    this.colors = data.colors || []
+    this.offerIds = data.offerIds || []
+    this.createdAt = data.createdAt || Date.now()
+    this.updatedAt = data.updatedAt || null
+    this._destroy = data._destroy || false
+  }
+
+  // Phương thức kiểm tra xem sản phẩm còn hàng hay không
+  isAvailable() {
+    return this.stock > 0
+  }
+
+  // Phương thức giảm số lượng sản phẩm khi có đơn hàng
+  reduceStock(quantity) {
+    if (this.stock >= quantity) {
+      this.stock -= quantity
+      this.updatedAt = Date.now()
+      return true
+    }
+    return false
+  }
+
+  // Phương thức tính giá cuối cùng nếu có ưu đãi
+  getFinalPrice(discount = 0) {
+    return Math.max(0, this.price - discount)
+  }
+
+  // Trả về dữ liệu sản phẩm ở dạng JSON
+  toJSON() {
+    return {
+      _id: this.id,
+      name: this.name,
+      slug: this.slug,
+      description: this.description,
+      price: this.price,
+      categoryId: this.categoryId,
+      stock: this.stock,
+      sizes: this.sizes,
+      colors: this.colors,
+      offerIds: this.offerIds,
+      createdAt: this.createdAt,
+      updatedAt: this.updatedAt,
+      _destroy: this._destroy
+    }
+  }
 }
 
-const validateBeforeCreate = async (data) => {
-  return await PRODUCT_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
-}
+class ProductModel {
+  // Lấy tất cả sản phẩm (trả về danh sách các đối tượng Product)
+  static async getAll() {
+    try {
+      const products = await GET_DB().collection(PRODUCT_COLLECTION_NAME).find().toArray()
+      return products.map(product => new Product(product)) // Chuyển đổi thành object Product
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
 
-const createNew = async (data) => {
-  try {
-    const validData = await validateBeforeCreate(data)
+  // Tạo sản phẩm mới
+  static async createNew(data) {
+    try {
+      const validData = await PRODUCT_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
+      const result = await GET_DB().collection(PRODUCT_COLLECTION_NAME).insertOne(validData)
+      return { insertedId: result.insertedId }
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
 
-    //Thêm dữ liệu vào mongoDB
-    return await GET_DB().collection(PRODUCT_COLLECTION_NAME).insertOne(validData)
-  } catch (error) { throw new Error(error) }
-}
+  // Tìm sản phẩm theo ID
+  static async findOneById(id) {
+    try {
+      const objectId = typeof id === 'string' ? new ObjectId(id) : id
+      return await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({ _id: objectId })
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
 
-const findOneById = async (id) => {
-  try {
-    return await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({ _id: new ObjectId(id) })
-  } catch (error) { throw new Error(error) }
-}
+  // Lấy chi tiết sản phẩm
+  static async getDetails(id) {
+    return await ProductModel.findOneById(id)
+  }
 
-const getDetails = async (id) => {
-  try {
-    return await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({ _id: new ObjectId(id) })
-  } catch (error) { throw new Error(error) }
-}
-
-const getDetailsBySlug = async (slug) => {
-  try {
-    return await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({ slug: slug })
-  } catch (error) { throw new Error(error) }
+  // Lấy chi tiết sản phẩm theo slug
+  static async getDetailsBySlug(slug) {
+    try {
+      const product = await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({ slug })
+      return product ? new Product(product) : null
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
 }
 
 export const productModel = {
   name: PRODUCT_COLLECTION_NAME,
   schema: PRODUCT_COLLECTION_SCHEMA,
-  getAll,
-  createNew,
-  findOneById,
-  getDetails,
-  getDetailsBySlug
+  getAll: ProductModel.getAll,
+  createNew: ProductModel.createNew,
+  findOneById: ProductModel.findOneById,
+  getDetails: ProductModel.getDetails,
+  getDetailsBySlug: ProductModel.getDetailsBySlug
 }
