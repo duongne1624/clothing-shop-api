@@ -14,7 +14,6 @@ const getAll = async (req, res, next) => {
 
 const createNew = async (req, res, next) => {
   try {
-    // Gửi dữ liệu xuống Service để xử lý
     const createdUser = await userService.createNew(req.body)
     res.status(StatusCodes.CREATED).json(createdUser)
   } catch (error) { next(error) }

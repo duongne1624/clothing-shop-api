@@ -5,7 +5,6 @@
 import Joi from 'joi'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 
-// Define Collection (Name & Schema)
 const OFFER_COLLECTION_NAME = 'offers'
 const OFFER_COLLECTION_SCHEMA = Joi.object({
   name: Joi.string().required().min(3).max(100).trim().strict(),

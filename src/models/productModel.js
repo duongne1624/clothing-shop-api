@@ -6,10 +6,8 @@ import { GET_DB } from '../config/mongodb'
 import Joi from 'joi'
 import { ObjectId } from 'mongodb'
 
-// Định nghĩa collection name
 const PRODUCT_COLLECTION_NAME = 'products'
 
-// Định nghĩa schema với Joi
 const PRODUCT_COLLECTION_SCHEMA = Joi.object({
   name: Joi.string().required().min(3).max(100).trim().strict(),
   slug: Joi.string().required().min(3).trim().strict(),
@@ -36,7 +34,6 @@ const PRODUCT_COLLECTION_SCHEMA = Joi.object({
   _destroy: Joi.boolean().default(false)
 })
 
-//Class product
 class Product {
   constructor(data) {
     this.id = data._id ? new ObjectId(data._id) : null
@@ -54,12 +51,10 @@ class Product {
     this._destroy = data._destroy || false
   }
 
-  // Phương thức kiểm tra xem sản phẩm còn hàng hay không
   isAvailable() {
     return this.stock > 0
   }
 
-  // Phương thức giảm số lượng sản phẩm khi có đơn hàng
   reduceStock(quantity) {
     if (this.stock >= quantity) {
       this.stock -= quantity
@@ -69,12 +64,10 @@ class Product {
     return false
   }
 
-  // Phương thức tính giá cuối cùng nếu có ưu đãi
   getFinalPrice(discount = 0) {
     return Math.max(0, this.price - discount)
   }
 
-  // Trả về dữ liệu sản phẩm ở dạng JSON
   toJSON() {
     return {
       _id: this.id,
@@ -95,7 +88,6 @@ class Product {
 }
 
 class ProductModel {
-  // Lấy tất cả sản phẩm (trả về danh sách các đối tượng Product)
   static async getAll() {
     try {
       const products = await GET_DB().collection(PRODUCT_COLLECTION_NAME).find().toArray()
@@ -105,7 +97,6 @@ class ProductModel {
     }
   }
 
-  // Tạo sản phẩm mới
   static async createNew(data) {
     try {
       const validData = await PRODUCT_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
@@ -116,7 +107,6 @@ class ProductModel {
     }
   }
 
-  // Tìm sản phẩm theo ID
   static async findOneById(id) {
     try {
       const objectId = typeof id === 'string' ? new ObjectId(id) : id
@@ -126,12 +116,10 @@ class ProductModel {
     }
   }
 
-  // Lấy chi tiết sản phẩm
   static async getDetails(id) {
     return await ProductModel.findOneById(id)
   }
 
-  // Lấy chi tiết sản phẩm theo slug
   static async getDetailsBySlug(slug) {
     try {
       const product = await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({ slug })

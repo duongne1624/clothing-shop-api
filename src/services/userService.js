@@ -19,10 +19,7 @@ const getAll = async () => {
 
 const createNew = async (reqBody) => {
   try {
-    // Gọi tới tầng Model để xử lý lưu bản ghi vào trong Database
     const createdUser = await userModel.createNew(reqBody)
-
-    // Lấy bản ghi sau khi tạo (tùy dự án có cần bước này không)
     const getNewUser = await userModel.findOneById(createdUser.insertedId.toString())
 
     return getNewUser
@@ -59,7 +56,7 @@ const register = async (userData) => {
     const createdUser = await userModel.createNew(newUser)
 
     // Gửi email xác nhận
-    await sendVerificationEmail(newUser.email, 'Welcome!', 'Cảm ơn bạn đã đăng ký!')
+    await sendVerificationEmail(newUser.email, 'Welcome!', 'Cảm ơn bạn đã đăng ký tài khoản tại shop quần áo TDW!')
 
     return createdUser
   } catch (error) {

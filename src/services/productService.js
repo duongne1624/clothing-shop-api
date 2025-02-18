@@ -17,19 +17,13 @@ const getAll = async () => {
 
 const createNew = async (reqBody) => {
   try {
-    //Xử lý dữ liệu tùy đặc thù dự án
     const newProduct = {
       ...reqBody,
       slug: slugify(reqBody.name)
     }
-
-    //Gọi tới tầng Model để xử lí lưu bản ghi vào trong Database
     const createdProduct = await productModel.createNew(newProduct)
-
-    //Lấy bản ghi sau khi gọi(tùy mục đích dự án có cần bước này hay không)
     const getNewProduct = await productModel.findOneById(createdProduct.insertedId.toString())
 
-    // Trả về từ Service luôn phải có return
     return getNewProduct
   } catch (error) { throw error }
 }
