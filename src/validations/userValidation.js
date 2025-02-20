@@ -5,7 +5,6 @@
 import Joi from 'joi'
 import { StatusCodes } from 'http-status-codes'
 import ApiError from '~/utils/ApiError'
-import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 
 const createNew = async (req, res, next) => {
   const correctValidation = Joi.object({
@@ -48,20 +47,14 @@ const createNew = async (req, res, next) => {
       'any.only': 'Role must be either "customer" or "admin"'
     }),
 
-    offerIds: Joi.array().items(
-      Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
-    ).default([]),
-
     createdAt: Joi.date().timestamp('javascript').default(Date.now),
     updatedAt: Joi.date().timestamp('javascript').default(null),
     _destroy: Joi.boolean().default(false)
   })
 
   try {
-    // Chỉ định abortEarly: false để hiển thị tất cả lỗi validation
     await correctValidation.validateAsync(req.body, { abortEarly: false })
 
-    // Dữ liệu hợp lệ thì cho phép request tiếp tục đến Controller
     next()
   } catch (error) {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))

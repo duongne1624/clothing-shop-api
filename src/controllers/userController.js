@@ -46,8 +46,8 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body
-    const result = await userService.login(email, password)
+    const { username, password } = req.body
+    const result = await userService.login(username, password)
     res.status(StatusCodes.OK).json(result)
   } catch (error) {
     next(error)

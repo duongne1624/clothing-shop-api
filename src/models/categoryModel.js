@@ -9,7 +9,8 @@ import { ObjectId } from 'mongodb'
 const CATEGORY_COLLECTION_NAME = 'categories'
 
 const CATEGORY_COLLECTION_SCHEMA = Joi.object({
-  name: Joi.string().required().min(3).max(100).trim().strict(),
+  name: Joi.string().required().min(1).max(100).trim().strict(),
+  slug: Joi.string().required().min(1).trim().strict(),
   description: Joi.string().max(256).trim().strict().default(''),
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
@@ -90,14 +91,25 @@ class CategoryModel {
       throw new Error(error.message)
     }
   }
+
+  static async getDetailsBySlug(slug) {
+    try {
+      const category = await GET_DB().collection(CATEGORY_COLLECTION_NAME).findOne({ slug })
+      return category
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
 }
 
 export const categoryModel = {
   name: CATEGORY_COLLECTION_NAME,
   schema: CATEGORY_COLLECTION_SCHEMA,
+  Category,
   getAll: CategoryModel.getAll,
   createNew: CategoryModel.createNew,
   findOneById: CategoryModel.findOneById,
   updateById: CategoryModel.updateById,
-  deleteById: CategoryModel.deleteById
+  deleteById: CategoryModel.deleteById,
+  getDetailsBySlug: CategoryModel.getDetailsBySlug
 }

@@ -9,13 +9,14 @@ Router.route('/')
   .post(productValidation.createNew, productController.createNew)
 
 Router.route('/:id')
-  // Get product details
   .get(productController.getDetails)
   // .put(productController.updateProducts)
   // .delete(productController.deleteProducts)
 
 Router.route('/GetDetailsBySlug/:slug')
-  // Get product details by slug
   .get(productController.getDetailsBySlug)
+
+Router.route('/GetProductsByCategoryId/:categoryId')
+  .get(productController.getAllProductByCategoryId)
 
 export const productRoute = Router

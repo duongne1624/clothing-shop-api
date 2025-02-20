@@ -122,8 +122,18 @@ class ProductModel {
 
   static async getDetailsBySlug(slug) {
     try {
-      const product = await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({ slug })
-      return product ? new Product(product) : null
+      const product = await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({ slug: slug })
+      return product
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  static async getAllProductByCategoryId(categoryId) {
+    try {
+      const products = await GET_DB().collection(PRODUCT_COLLECTION_NAME).find({ categoryId: categoryId }).toArray()
+
+      return products
     } catch (error) {
       throw new Error(error)
     }
@@ -133,9 +143,11 @@ class ProductModel {
 export const productModel = {
   name: PRODUCT_COLLECTION_NAME,
   schema: PRODUCT_COLLECTION_SCHEMA,
+  Product,
   getAll: ProductModel.getAll,
   createNew: ProductModel.createNew,
   findOneById: ProductModel.findOneById,
   getDetails: ProductModel.getDetails,
-  getDetailsBySlug: ProductModel.getDetailsBySlug
+  getDetailsBySlug: ProductModel.getDetailsBySlug,
+  getAllProductByCategoryId: ProductModel.getAllProductByCategoryId
 }

@@ -5,7 +5,6 @@
 import Joi from 'joi'
 import { GET_DB } from '../config/mongodb'
 import { ObjectId } from 'mongodb'
-import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 
 const USER_COLLECTION_NAME = 'users'
 
@@ -17,9 +16,6 @@ const USER_COLLECTION_SCHEMA = Joi.object({
   phone: Joi.string().pattern(/^[0-9]{10}$/).message('Phone number must be 10 digits'),
   address: Joi.string().max(255).trim().strict(),
   role: Joi.string().valid('customer', 'admin').default('customer'),
-  offerIds: Joi.array().items(
-    Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
-  ).default([]),
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
   _destroy: Joi.boolean().default(false)
@@ -35,7 +31,6 @@ class User {
     this.phone = data.phone || null
     this.address = data.address || ''
     this.role = data.role || 'customer'
-    this.offerIds = data.offerIds || []
     this.createdAt = data.createdAt || Date.now()
     this.updatedAt = data.updatedAt || null
     this._destroy = data._destroy || false
@@ -78,7 +73,6 @@ class User {
       phone: this.phone,
       address: this.address,
       role: this.role,
-      offerIds: this.offerIds,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       _destroy: this._destroy
@@ -138,6 +132,7 @@ class UserModel {
 export const userModel = {
   name: USER_COLLECTION_NAME,
   schema: USER_COLLECTION_SCHEMA,
+  User,
   getAll: UserModel.getAll,
   createNew: UserModel.createNew,
   findOneById: UserModel.findOneById,

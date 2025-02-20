@@ -19,6 +19,12 @@ const getAll = async () => {
 
 const createNew = async (reqBody) => {
   try {
+    const user = await userModel.findOneByUsername(reqBody.username)
+    if (user) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Username is exist!')
+
+    const user2 = await userModel.findByEmail(reqBody.email)
+    if (user2) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Email is exist!')
+
     const createdUser = await userModel.createNew(reqBody)
     const getNewUser = await userModel.findOneById(createdUser.insertedId.toString())
 
@@ -46,6 +52,12 @@ const getDetailsByUsername = async (username) => {
 
 const register = async (userData) => {
   try {
+    const user = await userModel.findOneByUsername(userData.username)
+    if (user) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Username is exist!')
+
+    const user2 = await userModel.findByEmail(userData.email)
+    if (user2) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Email is exist!')
+
     const hashedPassword = await bcrypt.hash(userData.password, 10)
 
     const newUser = {
@@ -56,7 +68,7 @@ const register = async (userData) => {
     const createdUser = await userModel.createNew(newUser)
 
     // Gửi email xác nhận
-    await sendVerificationEmail(newUser.email, 'Welcome!', 'Cảm ơn bạn đã đăng ký tài khoản tại shop quần áo TDW!')
+    await sendVerificationEmail(newUser.email)
 
     return createdUser
   } catch (error) {
@@ -64,10 +76,10 @@ const register = async (userData) => {
   }
 }
 
-const login = async (email, password) => {
+const login = async (username, password) => {
   try {
-    const user = await userModel.findByEmail(email)
-    if (!user) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Email not found!')
+    const user = await userModel.findOneByUsername(username)
+    if (!user) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Username not found!')
 
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Password not corect!')
