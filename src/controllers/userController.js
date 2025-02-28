@@ -9,31 +9,40 @@ const getAll = async (req, res, next) => {
   try {
     const users = await userService.getAll()
     res.status(StatusCodes.OK).json(users)
-  } catch (error) { next(error) }
+  } catch (error) {
+    next(error)
+  }
 }
 
 const createNew = async (req, res, next) => {
   try {
-    // Gửi dữ liệu xuống Service để xử lý
     const createdUser = await userService.createNew(req.body)
     res.status(StatusCodes.CREATED).json(createdUser)
-  } catch (error) { next(error) }
+  } catch (error) {
+    next(error)
+  }
 }
 
 const getDetails = async (req, res, next) => {
   try {
     const userId = req.params.id
     const user = await userService.getDetails(userId)
+    if (!user) return res.status(StatusCodes.NOT_FOUND).json({ message: 'Người dùng không tồn tại!' })
     res.status(StatusCodes.OK).json(user)
-  } catch (error) { next(error) }
+  } catch (error) {
+    next(error)
+  }
 }
 
 const getDetailsByUsername = async (req, res, next) => {
   try {
     const username = req.params.username
     const user = await userService.getDetailsByUsername(username)
+    if (!user) return res.status(StatusCodes.NOT_FOUND).json({ message: 'Người dùng không tồn tại!' })
     res.status(StatusCodes.OK).json(user)
-  } catch (error) { next(error) }
+  } catch (error) {
+    next(error)
+  }
 }
 
 const register = async (req, res, next) => {
@@ -47,9 +56,27 @@ const register = async (req, res, next) => {
 
 const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body
-    const result = await userService.login(email, password)
+    const { username, password } = req.body
+    const result = await userService.login(username, password)
     res.status(StatusCodes.OK).json(result)
+  } catch (error) {
+    next(error)
+  }
+}
+
+const updateUser = async (req, res, next) => {
+  try {
+    const updatedUser = await userService.updateUser(req.params.id, req.body)
+    res.status(StatusCodes.OK).json({ message: 'Cập nhật thành công!', user: updatedUser })
+  } catch (error) {
+    next(error)
+  }
+}
+
+const deleteUser = async (req, res, next) => {
+  try {
+    await userService.deleteUser(req.params.id)
+    res.status(StatusCodes.NO_CONTENT).send()
   } catch (error) {
     next(error)
   }
@@ -61,5 +88,7 @@ export const userController = {
   getDetails,
   getDetailsByUsername,
   register,
-  login
+  login,
+  updateUser,
+  deleteUser
 }

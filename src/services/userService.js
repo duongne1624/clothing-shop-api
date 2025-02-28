@@ -19,10 +19,13 @@ const getAll = async () => {
 
 const createNew = async (reqBody) => {
   try {
-    // Gọi tới tầng Model để xử lý lưu bản ghi vào trong Database
-    const createdUser = await userModel.createNew(reqBody)
+    const user = await userModel.findOneByUsername(reqBody.username)
+    if (user) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Username is exist!')
 
-    // Lấy bản ghi sau khi tạo (tùy dự án có cần bước này không)
+    const user2 = await userModel.findByEmail(reqBody.email)
+    if (user2) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Email is exist!')
+
+    const createdUser = await userModel.createNew(reqBody)
     const getNewUser = await userModel.findOneById(createdUser.insertedId.toString())
 
     return getNewUser
@@ -49,6 +52,12 @@ const getDetailsByUsername = async (username) => {
 
 const register = async (userData) => {
   try {
+    const user = await userModel.findOneByUsername(userData.username)
+    if (user) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Username is exist!')
+
+    const user2 = await userModel.findByEmail(userData.email)
+    if (user2) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Email is exist!')
+
     const hashedPassword = await bcrypt.hash(userData.password, 10)
 
     const newUser = {
@@ -59,7 +68,7 @@ const register = async (userData) => {
     const createdUser = await userModel.createNew(newUser)
 
     // Gửi email xác nhận
-    await sendVerificationEmail(newUser.email, 'Welcome!', 'Cảm ơn bạn đã đăng ký!')
+    await sendVerificationEmail(newUser.email)
 
     return createdUser
   } catch (error) {
@@ -67,10 +76,10 @@ const register = async (userData) => {
   }
 }
 
-const login = async (email, password) => {
+const login = async (username, password) => {
   try {
-    const user = await userModel.findByEmail(email)
-    if (!user) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Email not found!')
+    const user = await userModel.findOneByUsername(username)
+    if (!user) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Username not found!')
 
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) throw new ApiError(StatusCodes.UNAUTHORIZED, 'Password not corect!')
@@ -83,11 +92,33 @@ const login = async (email, password) => {
   }
 }
 
+const updateById = async (userId, updateData) => {
+  try {
+    const updatedUser = await userModel.updateById(userId, updateData)
+    if (!updatedUser) throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    return updatedUser
+  } catch (error) {
+    throw error
+  }
+}
+
+const deleteById = async (userId) => {
+  try {
+    const deletedUser = await userModel.deleteById(userId)
+    if (!deletedUser) throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    return deletedUser
+  } catch (error) {
+    throw error
+  }
+}
+
 export const userService = {
   getAll,
   createNew,
   getDetails,
   getDetailsByUsername,
   register,
-  login
+  login,
+  updateById,
+  deleteById
 }

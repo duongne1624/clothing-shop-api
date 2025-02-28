@@ -1,11 +1,10 @@
 /**
- * Updated by ThaiDuowng's author on Feb 16 2025
+ * Updated by ThaiDuowng's author on Feb 27 2025
  */
 
-import Joi from 'joi'
 import { GET_DB } from '../config/mongodb'
+import Joi from 'joi'
 import { ObjectId } from 'mongodb'
-import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 
 const USER_COLLECTION_NAME = 'users'
 
@@ -17,9 +16,6 @@ const USER_COLLECTION_SCHEMA = Joi.object({
   phone: Joi.string().pattern(/^[0-9]{10}$/).message('Phone number must be 10 digits'),
   address: Joi.string().max(255).trim().strict(),
   role: Joi.string().valid('customer', 'admin').default('customer'),
-  offerIds: Joi.array().items(
-    Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE)
-  ).default([]),
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
   _destroy: Joi.boolean().default(false)
@@ -35,7 +31,6 @@ class User {
     this.phone = data.phone || null
     this.address = data.address || ''
     this.role = data.role || 'customer'
-    this.offerIds = data.offerIds || []
     this.createdAt = data.createdAt || Date.now()
     this.updatedAt = data.updatedAt || null
     this._destroy = data._destroy || false
@@ -78,7 +73,6 @@ class User {
       phone: this.phone,
       address: this.address,
       role: this.role,
-      offerIds: this.offerIds,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       _destroy: this._destroy
@@ -127,8 +121,32 @@ class UserModel {
 
   static async findByEmail(email) {
     try {
-      const user = await GET_DB().collection(USER_COLLECTION_NAME).findOne({ email })
+      const user = await GET_DB().collection(USER_COLLECTION_NAME).findOne({ email: email, _destroy: false })
       return user ? new User(user) : null
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  static async updateById(id, updateData) {
+    try {
+      const objectId = new ObjectId(id)
+      const updatedFields = {
+        ...updateData,
+        updatedAt: Date.now()
+      }
+      await GET_DB().collection(USER_COLLECTION_NAME).updateOne({ _id: objectId }, { $set: updatedFields })
+      return { success: true }
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  static async deleteById(id) {
+    try {
+      const objectId = new ObjectId(id)
+      await GET_DB().collection(USER_COLLECTION_NAME).updateOne({ _id: objectId }, { $set: { _destroy: true } })
+      return { success: true }
     } catch (error) {
       throw new Error(error)
     }
@@ -138,9 +156,12 @@ class UserModel {
 export const userModel = {
   name: USER_COLLECTION_NAME,
   schema: USER_COLLECTION_SCHEMA,
+  User,
   getAll: UserModel.getAll,
   createNew: UserModel.createNew,
   findOneById: UserModel.findOneById,
   findOneByUsername: UserModel.findOneByUsername,
-  findByEmail: UserModel.findByEmail
+  findByEmail: UserModel.findByEmail,
+  updateById: UserModel.updateById,
+  deleteById: UserModel.deleteById
 }
