@@ -15,6 +15,7 @@ const PRODUCT_COLLECTION_SCHEMA = Joi.object({
   price: Joi.number().required().min(1000).max(1000000000),
   categoryId: Joi.string(),
   stock: Joi.number().required().min(0),
+  sold: Joi.number().default(0),
   sizes: Joi.array().items(Joi.string().valid('S', 'M', 'L', 'XL', 'XXL')).default([]),
 
   colors: Joi.array().items(
@@ -43,6 +44,7 @@ class Product {
     this.price = data.price
     this.categoryId = data.categoryId
     this.stock = data.stock
+    this.sold = data.sold || 0
     this.sizes = data.sizes || []
     this.colors = data.colors || []
     this.offerIds = data.offerIds || []
@@ -77,6 +79,7 @@ class Product {
       price: this.price,
       categoryId: this.categoryId,
       stock: this.stock,
+      sold: this.sold,
       sizes: this.sizes,
       colors: this.colors,
       offerIds: this.offerIds,
@@ -90,8 +93,8 @@ class Product {
 class ProductModel {
   static async getAll() {
     try {
-      const products = await GET_DB().collection(PRODUCT_COLLECTION_NAME).find().toArray()
-      return products.map(product => new Product(product)) // Chuyển đổi thành object Product
+      const products = await GET_DB().collection(PRODUCT_COLLECTION_NAME).find({ _destroy: false }).toArray()
+      return products.map(product => new Product(product))
     } catch (error) {
       throw new Error(error)
     }
@@ -110,7 +113,7 @@ class ProductModel {
   static async findOneById(id) {
     try {
       const objectId = typeof id === 'string' ? new ObjectId(id) : id
-      return await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({ _id: objectId })
+      return await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({ _id: objectId, _destroy: false })
     } catch (error) {
       throw new Error(error)
     }
@@ -122,7 +125,7 @@ class ProductModel {
 
   static async getDetailsBySlug(slug) {
     try {
-      const product = await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({ slug: slug })
+      const product = await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({ slug: slug, _destroy: false })
       return product
     } catch (error) {
       throw new Error(error)
@@ -131,12 +134,53 @@ class ProductModel {
 
   static async getAllProductByCategoryId(categoryId) {
     try {
-      const products = await GET_DB().collection(PRODUCT_COLLECTION_NAME).find({ categoryId: categoryId }).toArray()
+      const products = await GET_DB().collection(PRODUCT_COLLECTION_NAME).find({ categoryId: categoryId, _destroy: false }).toArray()
 
       return products
     } catch (error) {
       throw new Error(error)
     }
+  }
+
+  static async updateProduct(id, data) {
+    try {
+      const objectId = typeof id === 'string' ? new ObjectId(id) : id
+
+      const validData = await PRODUCT_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
+
+      await GET_DB()
+        .collection(PRODUCT_COLLECTION_NAME)
+        .updateOne(
+          { _id: objectId },
+          { $set: { ...validData, updatedAt: Date.now() } }
+        )
+
+      return await ProductModel.findOneById(id)
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  static async deleteProduct(id) {
+    try {
+      const objectId = typeof id === 'string' ? new ObjectId(id) : id
+
+      await GET_DB()
+        .collection(PRODUCT_COLLECTION_NAME)
+        .updateOne({ _id: objectId }, { $set: { _destroy: true, updatedAt: Date.now() } })
+
+      return { message: 'Product deleted successfully' }
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  static async searchByKeyword(keyword) {
+    const regex = new RegExp(keyword, 'i')
+    const products = await GET_DB().collection(PRODUCT_COLLECTION_NAME).find({
+      $or: [{ name: regex }, { description: regex }]
+    }).toArray()
+    return products
   }
 }
 
@@ -149,5 +193,8 @@ export const productModel = {
   findOneById: ProductModel.findOneById,
   getDetails: ProductModel.getDetails,
   getDetailsBySlug: ProductModel.getDetailsBySlug,
-  getAllProductByCategoryId: ProductModel.getAllProductByCategoryId
+  getAllProductByCategoryId: ProductModel.getAllProductByCategoryId,
+  updateProduct: ProductModel.updateProduct,
+  deleteProduct: ProductModel.deleteProduct,
+  searchByKeyword: ProductModel.searchByKeyword
 }

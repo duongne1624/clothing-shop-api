@@ -34,7 +34,6 @@ const getDetails = async (productId) => {
     const product = await productModel.getDetails(productId)
     if (!product) throw new ApiError(StatusCodes.NOT_FOUND, 'Product not found')
 
-    // Thêm category khi tìm kiếm sản phẩm
     const category = await categoryModel.findOneById(product.categoryId)
     if (!category) throw new ApiError(StatusCodes.NOT_FOUND, 'Category not found')
 
@@ -49,7 +48,6 @@ const getDetailsBySlug = async (productSlug) => {
     const product = await productModel.getDetailsBySlug(productSlug)
     if (!product) throw new ApiError(StatusCodes.NOT_FOUND, 'Product not found')
 
-    // Thêm category khi tìm kiếm sản phẩm
     const category = await categoryModel.findOneById(product.categoryId)
     if (!category) throw new ApiError(StatusCodes.NOT_FOUND, 'Category not found')
 
@@ -66,10 +64,65 @@ const getAllProductByCategoryId = async (categoryId) => {
   } catch (error) { throw error }
 }
 
-export const productSevice = {
+const getProductsByCategorySlug = async (categorySlug) => {
+  try {
+    // Tìm category dựa trên slug
+    const category = await categoryModel.getDetailsBySlug(categorySlug)
+    if (!category) throw new ApiError(StatusCodes.NOT_FOUND, 'Category not found')
+
+    // Lấy danh sách sản phẩm theo categoryId
+    const products = await productModel.getAllProductByCategoryId(category._id.toString())
+    const listCategory = {
+      category: category.name,
+      numberOf: products.Length,
+      products: products
+    }
+    return listCategory
+  } catch (error) {
+    throw error
+  }
+}
+
+const updateProduct = async (productId, updateData) => {
+  try {
+    const existingProduct = await productModel.findOneById(productId)
+    if (!existingProduct) throw new ApiError(StatusCodes.NOT_FOUND, 'Product not found')
+
+    if (updateData.name) {
+      updateData.slug = slugify(updateData.name)
+    }
+
+    const updatedProduct = await productModel.updateProduct(productId, updateData)
+    return updatedProduct
+  } catch (error) { throw error }
+}
+
+const deleteProduct = async (productId) => {
+  try {
+    const existingProduct = await productModel.findOneById(productId)
+    if (!existingProduct) throw new ApiError(StatusCodes.NOT_FOUND, 'Product not found')
+
+    await productModel.deleteProduct(productId)
+  } catch (error) { throw error }
+}
+
+const searchProducts = async (keyword) => {
+  try {
+    const products = await productModel.searchByKeyword(keyword)
+    return products
+  } catch (error) {
+    throw error
+  }
+}
+
+export const productService = {
   getAll,
   createNew,
   getDetails,
   getDetailsBySlug,
-  getAllProductByCategoryId
+  getAllProductByCategoryId,
+  getProductsByCategorySlug,
+  updateProduct,
+  deleteProduct,
+  searchProducts
 }

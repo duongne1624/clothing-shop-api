@@ -1,9 +1,9 @@
 /**
- * Updated by ThaiDuowng's author on Feb 16 2025
+ * Updated by ThaiDuowng's author on Feb 27 2025
  */
 
-import Joi from 'joi'
 import { GET_DB } from '../config/mongodb'
+import Joi from 'joi'
 import { ObjectId } from 'mongodb'
 
 const USER_COLLECTION_NAME = 'users'
@@ -121,8 +121,32 @@ class UserModel {
 
   static async findByEmail(email) {
     try {
-      const user = await GET_DB().collection(USER_COLLECTION_NAME).findOne({ email })
+      const user = await GET_DB().collection(USER_COLLECTION_NAME).findOne({ email: email, _destroy: false })
       return user ? new User(user) : null
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  static async updateById(id, updateData) {
+    try {
+      const objectId = new ObjectId(id)
+      const updatedFields = {
+        ...updateData,
+        updatedAt: Date.now()
+      }
+      await GET_DB().collection(USER_COLLECTION_NAME).updateOne({ _id: objectId }, { $set: updatedFields })
+      return { success: true }
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  static async deleteById(id) {
+    try {
+      const objectId = new ObjectId(id)
+      await GET_DB().collection(USER_COLLECTION_NAME).updateOne({ _id: objectId }, { $set: { _destroy: true } })
+      return { success: true }
     } catch (error) {
       throw new Error(error)
     }
@@ -137,5 +161,7 @@ export const userModel = {
   createNew: UserModel.createNew,
   findOneById: UserModel.findOneById,
   findOneByUsername: UserModel.findOneByUsername,
-  findByEmail: UserModel.findByEmail
+  findByEmail: UserModel.findByEmail,
+  updateById: UserModel.updateById,
+  deleteById: UserModel.deleteById
 }

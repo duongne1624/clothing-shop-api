@@ -10,13 +10,18 @@ Router.route('/')
 
 Router.route('/:id')
   .get(productController.getDetails)
-  // .put(productController.updateProducts)
-  // .delete(productController.deleteProducts)
+  .put(productController.updateProduct)
+  .delete(productController.deleteProduct)
 
 Router.route('/GetDetailsBySlug/:slug')
   .get(productController.getDetailsBySlug)
 
 Router.route('/GetProductsByCategoryId/:categoryId')
   .get(productController.getAllProductByCategoryId)
+
+Router.route('/GetProductsByCategorySlug/:categorySlug')
+  .get(productController.getProductsByCategorySlug)
+
+Router.get('/Search/:keyWord', productController.searchProducts)
 
 export const productRoute = Router

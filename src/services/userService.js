@@ -92,11 +92,33 @@ const login = async (username, password) => {
   }
 }
 
+const updateById = async (userId, updateData) => {
+  try {
+    const updatedUser = await userModel.updateById(userId, updateData)
+    if (!updatedUser) throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    return updatedUser
+  } catch (error) {
+    throw error
+  }
+}
+
+const deleteById = async (userId) => {
+  try {
+    const deletedUser = await userModel.deleteById(userId)
+    if (!deletedUser) throw new ApiError(StatusCodes.NOT_FOUND, 'User not found')
+    return deletedUser
+  } catch (error) {
+    throw error
+  }
+}
+
 export const userService = {
   getAll,
   createNew,
   getDetails,
   getDetailsByUsername,
   register,
-  login
+  login,
+  updateById,
+  deleteById
 }

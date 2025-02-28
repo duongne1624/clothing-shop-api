@@ -10,8 +10,8 @@ Router.route('/')
 
 Router.route('/:id')
   .get(userController.getDetails)
-  // .put(userController.updateUser)
-  // .delete(userController.deleteUser)
+  .put(userController.updateUser)
+  .delete(userController.deleteUser)
 
 Router.post('/register', userController.register)
 Router.post('/login', userController.login)

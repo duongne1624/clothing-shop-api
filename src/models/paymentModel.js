@@ -82,7 +82,7 @@ class OrderModel {
   static async findOneById(id) {
     try {
       const objectId = typeof id === 'string' ? new ObjectId(id) : id
-      return await GET_DB().collection(ORDER_COLLECTION_NAME).findOne({ _id: objectId, _destroy: false })
+      return await GET_DB().collection(ORDER_COLLECTION_NAME).findOne({ _id: objectId })
     } catch (error) {
       throw new Error(error)
     }

@@ -11,11 +11,12 @@ Router.route('/')
 Router.route('/:id')
   // Get category details
   .get(categoryController.getDetails)
-  // .put(categoryController.updatecategorys)
-  // .delete(categoryController.deletecategorys)
+  .put(categoryController.updateCategory)
+  .delete(categoryController.deleteCategory)
 
 Router.route('/GetDetailsBySlug/:slug')
-  // Get category details by slug
   .get(categoryController.getDetailsBySlug)
+
+Router.get('/GetHierarchy/get', categoryController.getHierarchy)
 
 export const categoryRoute = Router
