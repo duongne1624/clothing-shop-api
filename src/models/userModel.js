@@ -83,7 +83,7 @@ class User {
 class UserModel {
   static async getAll() {
     try {
-      const users = await GET_DB().collection(USER_COLLECTION_NAME).find({ _destroy: false }).toArray()
+      const users = await GET_DB().collection(USER_COLLECTION_NAME).find({ username: { $ne : null }, role: 'customer', _destroy: false }).toArray()
       return users.map(user => new User(user))
     } catch (error) {
       throw new Error(error)
@@ -112,7 +112,7 @@ class UserModel {
 
   static async findOneByUsername(username) {
     try {
-      const user = await GET_DB().collection(USER_COLLECTION_NAME).findOne({ username, _destroy: false })
+      const user = await GET_DB().collection(USER_COLLECTION_NAME).findOne({ username: username, _destroy: false })
       return user ? new User(user) : null
     } catch (error) {
       throw new Error(error)

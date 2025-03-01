@@ -10,6 +10,9 @@ import { ObjectId } from 'mongodb'
 const ORDER_COLLECTION_NAME = 'orders'
 const ORDER_COLLECTION_SCHEMA = Joi.object({
   userId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
+  name: Joi.string().default('Khách hàng'),
+  phone: Joi.string().default(''),
+  address: Joi.string().required(),
   items: Joi.array().items(
     Joi.object({
       productId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
@@ -21,7 +24,11 @@ const ORDER_COLLECTION_SCHEMA = Joi.object({
   ).min(1),
   totalAmount: Joi.number().required().min(1000),
   status: Joi.string().valid('pending', 'completed', 'cancelled').default('pending'),
-  paymentMethod: Joi.string().valid('cod', 'vnpay', 'shopeepay', 'momo').required(),
+  paymentMethod: Joi.string().required(),
+  shippingFee: Joi.number().default(30000),
+  note: Joi.string().default(''),
+  discountCode: Joi.string().allow('').default(''),
+  discountAmount: Joi.number().default(0),
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
   _destroy: Joi.boolean().default(false)
@@ -31,10 +38,17 @@ class Order {
   constructor(data) {
     this.id = data._id ? new ObjectId(data._id) : null
     this.userId = data.userId
+    this.name = data.name || 'Khách hàng'
+    this.phone = data.phone || ''
+    this.address = data.address || ''
     this.items = data.items || []
     this.totalAmount = data.totalAmount || 0
     this.status = data.status || 'pending'
     this.paymentMethod = data.paymentMethod
+    this.shippingFee = data.shippingFee || 30000
+    this.note = data.note || ''
+    this.discountCode = data.discountCode || ''
+    this.discountAmount = data.discountAmount || 0
     this.createdAt = data.createdAt || Date.now()
     this.updatedAt = data.updatedAt || null
     this._destroy = data._destroy || false
@@ -48,10 +62,17 @@ class Order {
     return {
       _id: this.id,
       userId: this.userId,
+      name: this.name,
+      phone: this.phone,
+      address: this.address,
       items: this.items,
       totalAmount: this.totalAmount,
       status: this.status,
       paymentMethod: this.paymentMethod,
+      shippingFee: this.shippingFee,
+      note: this.note,
+      discountCode: this.discountCode,
+      discountAmount: this.discountAmount,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       _destroy: this._destroy

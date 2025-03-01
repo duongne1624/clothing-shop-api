@@ -66,7 +66,7 @@ const login = async (req, res, next) => {
 
 const updateUser = async (req, res, next) => {
   try {
-    const updatedUser = await userService.updateUser(req.params.id, req.body)
+    const updatedUser = await userService.updateById(req.params.id, req.body)
     res.status(StatusCodes.OK).json({ message: 'Cập nhật thành công!', user: updatedUser })
   } catch (error) {
     next(error)
@@ -75,7 +75,7 @@ const updateUser = async (req, res, next) => {
 
 const deleteUser = async (req, res, next) => {
   try {
-    await userService.deleteUser(req.params.id)
+    await userService.deleteById(req.params.id)
     res.status(StatusCodes.NO_CONTENT).send()
   } catch (error) {
     next(error)
