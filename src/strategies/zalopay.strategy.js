@@ -1,0 +1,59 @@
+import PaymentStrategy from './payment.strategy'
+import axios from 'axios'
+import CryptoJS from 'crypto-js'
+import moment from 'moment'
+import { env } from '~/config/environment'
+
+class ZaloPayPayment extends PaymentStrategy {
+  async processPayment(paymentData) {
+    try {
+      // APP INFO
+      const config = {
+        app_id: 2554,
+        key1: 'sdngKKJmqEMzvh5QQcdD2A9XBSKUNaYn',
+        key2: 'trMrHtvjo6myautxDUiAcYsVtaeQ8nhf',
+        endpoint: 'https://sb-openapi.zalopay.vn/v2/create'
+      }
+
+      const items = paymentData.orderDetails.items || []
+      const transID = Math.floor(Math.random() * 1000000)
+
+      let embed_data = {
+        redirecturl: paymentData.orderDetails.redirecturl
+      }
+
+      const order = {
+        app_id: config.app_id,
+        app_trans_id: `${moment().format('YYMMDD')}_${transID}`,
+        app_user: paymentData.orderDetails.userId || paymentData.orderDetails.name,
+        app_time: Date.now(),
+        amount: paymentData.orderDetails.totalAmount,
+        item: JSON.stringify(items),
+        embed_data: JSON.stringify(embed_data),
+        description: `TDW's Shop | Thanh toán cho đơn hàng#${transID}`,
+        bank_code: 'zalopayapp',
+        callback_url: `${env.CALLBACK_URL}/v1/payments/callback/zalopay`,
+        name: paymentData.orderDetails.name,
+        phone: paymentData.orderDetails.phone,
+        address: paymentData.orderDetails.address
+      }
+
+      // Tính mac theo đúng thứ tự
+      const data = `${config.app_id}|${order.app_trans_id}|${order.app_user}|${order.amount}|${order.app_time}|${order.embed_data}|${order.item}`
+      order.mac = CryptoJS.HmacSHA256(data, config.key1).toString()
+
+      // Gọi API với JSON body
+      const response = await axios.post(config.endpoint, order)
+
+      if (response.data.return_code === 1) {
+        return { success: true, transactionId: `${moment().format('YYMMDD')}_${transID}`, paymentInfo: response.data }
+      } else {
+        return { success: false, message: response.data.return_message, paymentInfo: response.data }
+      }
+    } catch (error) {
+      return { success: false, message: error.message }
+    }
+  }
+}
+
+export default ZaloPayPayment

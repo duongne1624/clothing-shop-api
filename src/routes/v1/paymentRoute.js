@@ -1,16 +1,17 @@
 import express from 'express'
+import paymentController from '~/controllers/paymentController'
 import { paymentValidation } from '~/validations/paymentValidation'
-import { paymentController } from '~/controllers/paymentController'
 
 const Router = express.Router()
 
 Router.route('/')
-  .post(paymentValidation.createNew, paymentController.createNew)
+  .get(paymentController.getAllPayments)
+  .post(paymentValidation.createNew, paymentController.createNewPayment)
 
-Router.route('/:transactionId')
-  .get(paymentController.getPaymentStatus)
+Router.route('/:id')
+  .get(paymentController.getPaymentById)
+  .put(paymentController.updatePaymentStatus)
 
-Router.route('/update/:orderId')
-  .post(paymentController.updatePaymentStatus)
+Router.post('/callback/:paymentGateway', paymentController.paymentCallback)
 
 export const paymentRoute = Router
