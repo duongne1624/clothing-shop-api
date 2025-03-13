@@ -90,6 +90,16 @@ class CategoryModel {
     }
   }
 
+  static async GetNameById(id) {
+    try {
+      const objectId = new ObjectId(id)
+      const category = await GET_DB().collection(CATEGORY_COLLECTION_NAME).findOne({ _id: objectId, _destroy: false })
+      return category.name
+    } catch (error) {
+      throw new Error(error.message)
+    }
+  }
+
   static async updateById(id, updateData) {
     try {
       const objectId = new ObjectId(id)
@@ -154,6 +164,7 @@ export const categoryModel = {
   getAll: CategoryModel.getAll,
   createNew: CategoryModel.createNew,
   findOneById: CategoryModel.findOneById,
+  GetNameById: CategoryModel.GetNameById,
   updateById: CategoryModel.updateById,
   deleteById: CategoryModel.deleteById,
   getDetailsBySlug: CategoryModel.getDetailsBySlug,

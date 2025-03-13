@@ -40,7 +40,7 @@ const getCouponByCode = async (code) => {
 
 const validateCoupon = async (code, totalAmount) => {
   try {
-    const coupon = await couponModel.findByCode(code)
+    const coupon = await couponModel.findOneByCode(code)
     if (!coupon) throw new ApiError(StatusCodes.NOT_FOUND, 'Invalid coupon code')
 
     if (coupon.minOrderValue && totalAmount < coupon.minOrderValue) {

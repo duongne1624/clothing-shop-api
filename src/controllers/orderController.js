@@ -1,5 +1,8 @@
 import { orderService } from '~/services/orderService'
-import { createOrderSchema, updateOrderSchema } from '~/validations/orderValidation'
+import { createOrderSchema } from '~/validations/orderValidation'
+import handleZaloPayCallback from '~/callbacks/zalopay.callback'
+import handleMomoCallback from '~/callbacks/momo.callback'
+import handleVNPayCallback from '~/callbacks/vnpay.callback'
 
 const createOrder = async (req, res, next) => {
   try {
@@ -32,9 +35,10 @@ const getOrderById = async (req, res, next) => {
 
 const updateOrderStatus = async (req, res, next) => {
   try {
-    const validatedData = await updateOrderSchema.validateAsync(req.body, { abortEarly: false })
-    const updatedOrder = await orderService.updateOrderStatus(req.params.id, validatedData.status)
-    res.status(200).json({ message: 'Cập nhật trạng thái thành công!', order: updatedOrder })
+    const updatedOrder = await orderService.updateOrderStatus(req.params.id)
+    if (updatedOrder === true)
+      res.status(200).json({ message: 'Cập nhật trạng thái đơn hàng thành công!', order: updatedOrder })
+    else res.status(203).json({ message: 'Không thể cập nhật đơn hàng!', order: updatedOrder })
   } catch (error) {
     next(error)
   }
@@ -49,10 +53,26 @@ const deleteOrder = async (req, res, next) => {
   }
 }
 
+const paymentCallback = async (req, res) => {
+  const { paymentGateway } = req.params
+
+  switch (paymentGateway) {
+  case 'zalopay':
+    return await handleZaloPayCallback(req, res)
+  case 'momo':
+    return await handleMomoCallback(req, res)
+  case 'vnpay':
+    return await handleVNPayCallback(req, res)
+  default:
+    return res.status(400).json({ message: 'Invalid payment gateway' })
+  }
+}
+
 export const orderController = {
   createOrder,
   getAllOrders,
   getOrderById,
   updateOrderStatus,
-  deleteOrder
+  deleteOrder,
+  paymentCallback
 }

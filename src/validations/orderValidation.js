@@ -3,9 +3,9 @@ import Joi from 'joi'
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 
 export const createOrderSchema = Joi.object({
-  userId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
-  name: Joi.string().default('Khách hàng'),
-  phone: Joi.string().default(''),
+  userId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE).allow(null),
+  name: Joi.string().required(),
+  phone: Joi.string().allow('').required(),
   address: Joi.string().required(),
   items: Joi.array().items(
     Joi.object({
@@ -16,11 +16,12 @@ export const createOrderSchema = Joi.object({
       price: Joi.number().required().min(1000)
     })
   ).min(1),
-  totalAmount: Joi.number().required().min(1000),
+  amount: Joi.number().required().min(1000),
   status: Joi.string().valid('pending', 'completed', 'cancelled').default('pending'),
   paymentMethod: Joi.string().required().valid('zalopay', 'momo', 'vnpay', 'cod'),
-  shippingFee: Joi.number().default(30000),
-  note: Joi.string().default(''),
+  paymentStatus: Joi.string().valid('pending', 'paid', 'failed', 'refunded').default('pending'),
   discountCode: Joi.string().allow('').default(''),
-  discountAmount: Joi.number().default(0)
+  discountAmount: Joi.number().default(0),
+  lastAmount: Joi.number().required().min(1000),
+  redirecturl: Joi.string().allow('').default('')
 })

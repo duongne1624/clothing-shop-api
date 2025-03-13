@@ -1,5 +1,4 @@
 import CryptoJS from 'crypto-js'
-import Payment from '~/models/paymentModel'
 import { orderModel } from '~/models/orderModel'
 
 
@@ -20,19 +19,8 @@ async function handleZaloPayCallback(req, res) {
     } else {
       let dataJson = JSON.parse(dataStr)
 
-      await Payment.updateByAppTransId(dataJson['app_trans_id'], { status: 'success' })
+      await orderModel.updateByAppTransId(dataJson['app_trans_id'], { status: 'success' })
 
-      const paymentDetails = await Payment.findOneByAppTransId(dataJson['app_trans_id'])
-      // Tạo đơn hàng
-      await orderModel.createNew({
-        userId: paymentDetails.orderDetails.userId,
-        name: paymentDetails.orderDetails.name,
-        phone: paymentDetails.orderDetails.phone,
-        address: paymentDetails.orderDetails.address,
-        items: paymentDetails.orderDetails.items,
-        totalAmount: paymentDetails.orderDetails.totalAmount,
-        paymentMethod: paymentDetails.paymentMethod
-      })
 
       result.return_code = 1
       result.return_message = 'success'

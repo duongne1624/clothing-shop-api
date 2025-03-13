@@ -100,6 +100,17 @@ class ProductModel {
     }
   }
 
+  static async getAllProductIds(productIds) {
+    try {
+      const products = await GET_DB().collection(PRODUCT_COLLECTION_NAME)
+        .find({ _id: { $in: productIds } })
+        .toArray()
+      return products.map(product => new Product(product))
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
   static async createNew(data) {
     try {
       const validData = await PRODUCT_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
@@ -137,6 +148,17 @@ class ProductModel {
       const products = await GET_DB().collection(PRODUCT_COLLECTION_NAME).find({ categoryId: categoryId, _destroy: false }).toArray()
 
       return products
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  static async getCategoryIdByProductId(productId) {
+    try {
+      const objectId = typeof productId === 'string' ? new ObjectId(productId) : productId
+      const product = await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({ _id: objectId, _destroy: false })
+
+      return product.categoryId
     } catch (error) {
       throw new Error(error)
     }
@@ -189,11 +211,13 @@ export const productModel = {
   schema: PRODUCT_COLLECTION_SCHEMA,
   Product,
   getAll: ProductModel.getAll,
+  getAllProductIds: ProductModel.getAllProductIds,
   createNew: ProductModel.createNew,
   findOneById: ProductModel.findOneById,
   getDetails: ProductModel.getDetails,
   getDetailsBySlug: ProductModel.getDetailsBySlug,
   getAllProductByCategoryId: ProductModel.getAllProductByCategoryId,
+  getCategoryIdByProductId: ProductModel.getCategoryIdByProductId,
   updateProduct: ProductModel.updateProduct,
   deleteProduct: ProductModel.deleteProduct,
   searchByKeyword: ProductModel.searchByKeyword

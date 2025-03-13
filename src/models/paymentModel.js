@@ -64,12 +64,14 @@ class Payment {
       if (paymentResult.success) {
         value.transactionId = paymentResult.transactionId
         value.status = 'pending'
+        if (value.paymentMethod === 'cod') {
+          value.status = 'success'
+        }
         value.paymentInfo = paymentResult.paymentInfo
       } else {
         value.status = 'failed'
         value.paymentInfo = paymentResult.paymentInfo
       }
-
       const insertValue = new Payment(value)
       const db = await GET_DB()
       const result = await db.collection(PAYMENT_COLLECTION_NAME).insertOne(insertValue.toJSON())

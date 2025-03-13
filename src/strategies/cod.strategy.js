@@ -2,8 +2,15 @@ import PaymentStrategy from './payment.strategy'
 
 class CodPayment extends PaymentStrategy {
   async processPayment(paymentData) {
-    console.log('Processing payment via COD')
-    return { success: true, transactionId: null, paymentInfo: null }
+    return { success: true, transactionId: null, paymentInfo: {
+      return_code: 1,
+      return_message: 'Giao dịch thành công',
+      sub_return_code: 1,
+      sub_return_message: 'Giao dịch thành công',
+      zp_trans_token: 'ACiGwotsTyXAh9nnzMj-Rdow',
+      order_url: paymentData.redirecturl,
+      order_token: 'ACiGwotsTyXAh9nnzMj-Rdow'
+    } }
   }
 }
 
