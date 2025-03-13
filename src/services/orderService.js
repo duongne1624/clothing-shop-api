@@ -12,8 +12,8 @@ const getOrderById = async (orderId) => {
   return await orderModel.findOneById(orderId)
 }
 
-const updateOrderStatus = async (orderId, status) => {
-  return await orderModel.updateStatus(orderId, status)
+const updateOrderStatus = async (orderId) => {
+  return await orderModel.updateStatus(orderId)
 }
 
 const updateById = async (orderId, updateData) => {

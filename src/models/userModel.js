@@ -154,8 +154,6 @@ class UserModel {
 }
 
 export const userModel = {
-  name: USER_COLLECTION_NAME,
-  schema: USER_COLLECTION_SCHEMA,
   User,
   getAll: UserModel.getAll,
   createNew: UserModel.createNew,

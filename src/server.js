@@ -8,37 +8,32 @@ import { CONNECT_DB, CLOSE_DB } from '~/config/mongodb.js'
 import { env } from '~/config/environment.js'
 import { APIs_V1 } from '~/routes/v1'
 import { errorHandlingMiddleware } from '~/middlewares/errorHandlingMiddleware'
+import SubscriberService from '~/services/subscriberService'
 
 const START_SERVER = () => {
   const app = express()
 
-  // Cấu hình CORS
   app.use(cors(corsOptions))
 
-  // Hỗ trợ JSON body
   app.use(express.json())
 
-  // Định tuyến API V1
+  SubscriberService.getSubscribers()
+
   app.use('/v1', APIs_V1)
 
-  // Middleware xử lý lỗi tập trung
   app.use(errorHandlingMiddleware)
 
-  // Lắng nghe server
   const server = app.listen(env.APP_PORT, env.APP_HOST, () => {
     console.log(chalk.green.bold(`✅ Backend Server is running at http://${env.APP_HOST}:${env.APP_PORT}/`))
   })
 
-  // Xử lý khi thoát ứng dụng
   exitHook(async () => {
     console.log(chalk.yellow('⚠️  Shutting down server...'))
 
-    // Đảm bảo server đóng hoàn toàn
     await new Promise((resolve) => server.close(resolve))
 
     console.log(chalk.blue('🔄 Disconnecting from MongoDB Cloud Atlas...'))
     await CLOSE_DB()
-    console.log(chalk.red('❌ Disconnected from MongoDB Cloud Atlas'))
   })
 }
 
@@ -46,9 +41,7 @@ const START_SERVER = () => {
   try {
     console.log(chalk.cyan(`👨‍💻 Made by: ${env.AUTHOR}`))
 
-    console.log(chalk.yellow('⏳  Connecting to MongoDB Cloud Atlas...'))
     await CONNECT_DB()
-    console.log(chalk.green('✅  Connected to MongoDB Cloud Atlas!'))
 
     START_SERVER()
   } catch (error) {

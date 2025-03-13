@@ -15,17 +15,17 @@ const createNew = async (req, res, next) => {
       'string.max': 'Coupon code length must be at most {#limit} characters long'
     }),
 
-    discountType: Joi.string().valid('percentage', 'fixed').required().messages({
+    type: Joi.string().valid('percentage', 'fixed').required().messages({
       'any.required': 'Discount type is required',
       'any.only': 'Discount type must be either percentage or fixed'
     }),
 
-    discountValue: Joi.number().required().min(1).messages({
+    value: Joi.number().required().min(1).messages({
       'any.required': 'Discount value is required',
       'number.min': 'Discount value must be greater than 0'
     }),
 
-    minOrderValue: Joi.number().min(0).default(0).messages({
+    minOrder: Joi.number().min(0).default(0).messages({
       'number.min': 'Minimum order value cannot be negative'
     }),
 
@@ -37,7 +37,7 @@ const createNew = async (req, res, next) => {
       'number.min': 'Usage limit must be at least 1'
     }),
 
-    expirationDate: Joi.date().greater('now').messages({
+    expiresAt: Joi.date().greater('now').messages({
       'any.required': 'Expiration date is required',
       'date.greater': 'Expiration date must be in the future'
     }),

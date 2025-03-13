@@ -1,57 +1,73 @@
 /**
- * Updated by ThaiDuowng's author on Feb 12 2025
+ * Updated by ThaiDuowng's author on Mar 03 2025
  */
 
 import { GET_DB } from '../config/mongodb'
 import Joi from 'joi'
-import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { ObjectId } from 'mongodb'
 
-const ORDER_COLLECTION_NAME = 'orders'
-const ORDER_COLLECTION_SCHEMA = Joi.object({
-  userId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
-  items: Joi.array().items(
-    Joi.object({
-      productId: Joi.string().required().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE),
-      quantity: Joi.number().required().min(1),
-      size: Joi.string().valid('S', 'M', 'L', 'XL', 'XXL').default('M'),
-      color: Joi.string().trim(),
-      price: Joi.number().required().min(1000)
-    })
-  ).min(1),
-  totalAmount: Joi.number().required().min(1000),
-  status: Joi.string().valid('pending', 'completed', 'cancelled').default('pending'),
-  paymentMethod: Joi.string().valid('cod', 'vnpay', 'shopeepay', 'momo').required(),
+const COUPON_COLLECTION_NAME = 'coupons'
+
+const COUPON_COLLECTION_SCHEMA = Joi.object({
+  code: Joi.string().required().trim().uppercase(),
+  type: Joi.string().valid('percent', 'fixed').required(),
+  value: Joi.number().required().min(1),
+  maxDiscount: Joi.number().min(0).default(null),
+  minOrder: Joi.number().min(0).default(0),
+  usageLimit: Joi.number().min(1).default(null),
+  usedCount: Joi.number().min(0).default(0),
+  expiresAt: Joi.date().timestamp('javascript').required(),
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
   _destroy: Joi.boolean().default(false)
 })
 
-class Order {
+class Coupon {
   constructor(data) {
     this.id = data._id ? new ObjectId(data._id) : null
-    this.userId = data.userId
-    this.items = data.items || []
-    this.totalAmount = data.totalAmount || 0
-    this.status = data.status || 'pending'
-    this.paymentMethod = data.paymentMethod
+    this.code = data.code
+    this.type = data.type
+    this.value = data.value
+    this.maxDiscount = data.maxDiscount || null
+    this.minOrder = data.minOrder || 0
+    this.usageLimit = data.usageLimit || null
+    this.usedCount = data.usedCount || 0
+    this.expiresAt = data.expiresAt
     this.createdAt = data.createdAt || Date.now()
     this.updatedAt = data.updatedAt || null
     this._destroy = data._destroy || false
   }
 
-  getTotalAmount() {
-    return this.items.reduce((total, item) => total + item.quantity * item.price, 0)
+  isValid(orderAmount) {
+    return (
+      !this._destroy &&
+      this.usedCount < (this.usageLimit || Infinity) &&
+      new Date() < new Date(this.expiresAt) &&
+      orderAmount >= this.minOrder
+    )
+  }
+
+  applyDiscount(orderAmount) {
+    if (!this.isValid(orderAmount)) return 0
+
+    let discount = this.type === 'percent'
+      ? (orderAmount * this.value) / 100
+      : this.value
+
+    return this.maxDiscount ? Math.min(discount, this.maxDiscount) : discount
   }
 
   toJSON() {
     return {
       _id: this.id,
-      userId: this.userId,
-      items: this.items,
-      totalAmount: this.totalAmount,
-      status: this.status,
-      paymentMethod: this.paymentMethod,
+      code: this.code,
+      type: this.type,
+      value: this.value,
+      maxDiscount: this.maxDiscount,
+      minOrder: this.minOrder,
+      usageLimit: this.usageLimit,
+      usedCount: this.usedCount,
+      expiresAt: this.expiresAt,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       _destroy: this._destroy
@@ -59,11 +75,11 @@ class Order {
   }
 }
 
-class OrderModel {
+class CouponModel {
   static async getAll() {
     try {
-      const orders = await GET_DB().collection(ORDER_COLLECTION_NAME).find({ _destroy: false }).toArray()
-      return orders.map(order => new Order(order))
+      const coupons = await GET_DB().collection(COUPON_COLLECTION_NAME).find().toArray()
+      return coupons.map(coupon => new Coupon(coupon))
     } catch (error) {
       throw new Error(error)
     }
@@ -71,60 +87,40 @@ class OrderModel {
 
   static async createNew(data) {
     try {
-      const validData = await ORDER_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
-      const result = await GET_DB().collection(ORDER_COLLECTION_NAME).insertOne(validData)
+      const validData = await COUPON_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
+      const result = await GET_DB().collection(COUPON_COLLECTION_NAME).insertOne(validData)
       return { insertedId: result.insertedId }
     } catch (error) {
       throw new Error(error)
     }
   }
 
-  static async findOneById(id) {
+  static async findOneByCode(code) {
     try {
-      const objectId = typeof id === 'string' ? new ObjectId(id) : id
-      return await GET_DB().collection(ORDER_COLLECTION_NAME).findOne({ _id: objectId, _destroy: false })
+      return await GET_DB().collection(COUPON_COLLECTION_NAME).findOne({ code })
     } catch (error) {
       throw new Error(error)
     }
   }
 
-  static async getDetails(id) {
-    return this.findOneById(id)
-  }
-
-  static async updateById(id, updateData) {
+  static async incrementUsage(code) {
     try {
-      const objectId = typeof id === 'string' ? new ObjectId(id) : id
-      const result = await GET_DB()
-        .collection(ORDER_COLLECTION_NAME)
-        .updateOne({ _id: objectId }, { $set: updateData })
-      return result.modifiedCount > 0
-    } catch (error) {
-      throw new Error(error)
-    }
-  }
-
-  static async deleteById(id) {
-    try {
-      const objectId = typeof id === 'string' ? new ObjectId(id) : id
-      const result = await GET_DB()
-        .collection(ORDER_COLLECTION_NAME)
-        .updateOne({ _id: objectId }, { $set: { _destroy: true } })
-      return result.modifiedCount > 0
+      return await GET_DB().collection(COUPON_COLLECTION_NAME).updateOne(
+        { code },
+        { $inc: { usedCount: 1 }, $set: { updatedAt: Date.now() } }
+      )
     } catch (error) {
       throw new Error(error)
     }
   }
 }
 
-export const orderModel = {
-  name: ORDER_COLLECTION_NAME,
-  schema: ORDER_COLLECTION_SCHEMA,
-  Order,
-  getAll: OrderModel.getAll,
-  createNew: OrderModel.createNew,
-  findOneById: OrderModel.findOneById,
-  getDetails: OrderModel.getDetails,
-  updateById: OrderModel.updateById,
-  deleteById: OrderModel.deleteById
+export const couponModel = {
+  name: COUPON_COLLECTION_NAME,
+  schema: COUPON_COLLECTION_SCHEMA,
+  Coupon,
+  getAll: CouponModel.getAll,
+  createNew: CouponModel.createNew,
+  findOneByCode: CouponModel.findOneByCode,
+  incrementUsage: CouponModel.incrementUsage
 }

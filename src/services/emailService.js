@@ -1,5 +1,57 @@
 import nodemailer from 'nodemailer'
 
+class IObserver {
+  // eslint-disable-next-line no-unused-vars
+  notify(to, msg) {
+    throw new Error('Chưa chọn phương thức gửi email.')
+  }
+}
+
+export class SendNewCouponInformationToRegisterEmail extends IObserver {
+  constructor(email) {
+    super()
+    this.email = email
+  }
+
+  notify(to, msg) {
+    return sendEmail(to, msg)
+  }
+}
+
+class ISubject {
+  register() {}
+  unregister() {}
+  notifyRegisterUsers() {}
+}
+
+export class Subject extends ISubject {
+  constructor() {
+    super()
+    this.observerList = []
+  }
+
+  register(observer) {
+    if (!this.observerList.includes(observer)) {
+      this.observerList.push(observer)
+    }
+  }
+
+  unregister(observer) {
+    const index = this.observerList.indexOf(observer)
+    if (index !== -1) {
+      this.observerList.splice(index, 1)
+    }
+  }
+
+  notifyRegisterUsers(msg) {
+    this.observerList.forEach(observer => {
+      console.log('Gửi email đến người dùng: ', observer.email)
+      const to = observer.email
+      observer.notify(to, msg)
+    })
+  }
+}
+
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -7,6 +59,22 @@ const transporter = nodemailer.createTransport({
     pass: process.env.EMAIL_PASS
   }
 })
+
+const sendEmail = async (to, msg) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: to,
+    subject: 'Mã giảm giá mới! TDW\'s Shop',
+    text: `Chào bạn! Chúng tôi rất vui mừng thông báo rằng mã giảm giá đặc biệt vừa được tạo với số lượng có hạn: ${msg}! Với mã này, bạn sẽ nhận được ưu đãi hấp dẫn khi mua sắm hoặc sử dụng dịch vụ của chúng tôi. Hãy nhanh tay áp dụng mã giảm giá tại bước thanh toán để tận hưởng ngay lợi ích tuyệt vời. Đừng bỏ lỡ cơ hội này nhé – mã có thể có thời hạn sử dụng, vì vậy hãy sử dụng sớm để không bỏ lỡ! Cảm ơn bạn đã đồng hành cùng chúng tôi!`
+  }
+
+  try {
+    await transporter.sendMail(mailOptions)
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error(`Lỗi khi gửi email tới ${to}:`, error)
+  }
+}
 
 export const sendVerificationEmail = async (to) => {
   var content = ''

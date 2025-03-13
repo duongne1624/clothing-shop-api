@@ -44,6 +44,10 @@ const createNew = async (req, res, next) => {
       'array.includes': 'Sizes must be one of S, M, L, XL, XXL'
     }),
 
+    sold: Joi.number().min(0).default(0).messages({
+      'number.min': 'Stock cannot be negative'
+    }),
+
     colors: Joi.array().items(
       Joi.object({
         name: Joi.string().required().trim().messages({
@@ -68,10 +72,7 @@ const createNew = async (req, res, next) => {
   })
 
   try {
-    // Chỉ định abortEarly: false để trường hợp có nhiều lỗi validation thì trả về tất cả lỗi
     await correctValidation.validateAsync(req.body, { abortEarly: false })
-
-    // Dữ liệu hợp lệ thì cho phép request tiếp đến Controller
     next()
   } catch (error) {
     next(new ApiError(StatusCodes.UNPROCESSABLE_ENTITY, new Error(error).message))
