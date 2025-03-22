@@ -12,6 +12,10 @@ const getOrderById = async (orderId) => {
   return await orderModel.findOneById(orderId)
 }
 
+const getOrderByTranId = async (orderId) => {
+  return await orderModel.findOneByAppTransId(orderId)
+}
+
 const updateOrderStatus = async (orderId) => {
   return await orderModel.updateStatus(orderId)
 }
@@ -28,6 +32,7 @@ export const orderService = {
   createOrder,
   getAllOrders,
   getOrderById,
+  getOrderByTranId,
   updateOrderStatus,
   updateById,
   deleteById

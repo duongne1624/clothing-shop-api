@@ -21,16 +21,23 @@ class CategorySalesVisitor extends SalesVisitor {
     super()
     this.salesByCategory = {}
     this.productModel = productModel
+    this.categoryCache = new Map() // Cache để lưu categoryId
   }
 
   async visit(order) {
-    for (const item of order.items) {
-      const categoryId = await this.productModel.getCategoryIdByProductId(item.productId)
+    const promises = order.items.map(async (item) => {
+      let categoryId = this.categoryCache.get(item.productId)
+      if (!categoryId) {
+        categoryId = await this.productModel.getCategoryIdByProductId(item.productId)
+        this.categoryCache.set(item.productId, categoryId)
+      }
       if (!this.salesByCategory[categoryId]) {
         this.salesByCategory[categoryId] = 0
       }
       this.salesByCategory[categoryId] += item.quantity * item.price
-    }
+    })
+
+    await Promise.all(promises)
   }
 }
 
@@ -39,6 +46,7 @@ class TopSellingProductsVisitor extends SalesVisitor {
     super()
     this.productSales = {}
     this.productModel = productModel
+    this.productCache = new Map() // Cache để lưu thông tin sản phẩm
   }
 
   visit(order) {
@@ -57,7 +65,11 @@ class TopSellingProductsVisitor extends SalesVisitor {
 
     const productsWithNames = await Promise.all(
       sortedProducts.map(async ([productId, sold]) => {
-        const product = await this.productModel.findOneById(productId)
+        let product = this.productCache.get(productId)
+        if (!product) {
+          product = await this.productModel.findOneById(productId)
+          this.productCache.set(productId, product)
+        }
         return {
           name: product ? product.name : 'Không xác định',
           sold
@@ -69,11 +81,12 @@ class TopSellingProductsVisitor extends SalesVisitor {
   }
 }
 
-
 const filterOrdersByDate = (orders, startDate, endDate) => {
+  const start = new Date(startDate)
+  const end = new Date(endDate)
   return orders.filter(order => {
     const orderDate = new Date(order.createdAt)
-    return orderDate >= startDate && orderDate <= endDate
+    return orderDate >= start && orderDate <= end
   })
 }
 

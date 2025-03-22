@@ -33,6 +33,16 @@ const getOrderById = async (req, res, next) => {
   }
 }
 
+const getOrderByTranId = async (req, res, next) => {
+  try {
+    const order = await orderService.getOrderByTranId(req.params.tranId)
+    if (!order) return res.status(404).json({ message: 'Không tìm thấy đơn hàng!' })
+    res.status(200).json(order)
+  } catch (error) {
+    next(error)
+  }
+}
+
 const updateOrderStatus = async (req, res, next) => {
   try {
     const updatedOrder = await orderService.updateOrderStatus(req.params.id)
@@ -72,6 +82,7 @@ export const orderController = {
   createOrder,
   getAllOrders,
   getOrderById,
+  getOrderByTranId,
   updateOrderStatus,
   deleteOrder,
   paymentCallback

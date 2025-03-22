@@ -16,7 +16,7 @@ const COUPON_COLLECTION_SCHEMA = Joi.object({
   minOrder: Joi.number().min(0).default(0),
   usageLimit: Joi.number().min(1).default(null),
   usedCount: Joi.number().min(0).default(0),
-  expiresAt: Joi.date().timestamp('javascript').required(),
+  expiresAt: Joi.date().timestamp('javascript'),
   createdAt: Joi.date().timestamp('javascript').default(Date.now),
   updatedAt: Joi.date().timestamp('javascript').default(null),
   _destroy: Joi.boolean().default(false)
@@ -103,12 +103,36 @@ class CouponModel {
     }
   }
 
+  static async findOneById(id) {
+    try {
+      return await GET_DB().collection(COUPON_COLLECTION_NAME).findOne({ _id: new ObjectId(id) })
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
   static async incrementUsage(code) {
     try {
       return await GET_DB().collection(COUPON_COLLECTION_NAME).updateOne(
         { code },
         { $inc: { usedCount: 1 }, $set: { updatedAt: Date.now() } }
       )
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  static async updateById(id, data) {
+    try {
+      return await GET_DB().collection(COUPON_COLLECTION_NAME).updateOne({ _id: new ObjectId(id) }, { $set: data })
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  static async deleteById(id) {
+    try {
+      return await GET_DB().collection(COUPON_COLLECTION_NAME).deleteOne({ _id: new ObjectId(id) })
     } catch (error) {
       throw new Error(error)
     }
@@ -122,5 +146,8 @@ export const couponModel = {
   getAll: CouponModel.getAll,
   createNew: CouponModel.createNew,
   findOneByCode: CouponModel.findOneByCode,
-  incrementUsage: CouponModel.incrementUsage
+  findOneById: CouponModel.findOneById,
+  incrementUsage: CouponModel.incrementUsage,
+  updateById: CouponModel.updateById,
+  deleteById: CouponModel.deleteById
 }

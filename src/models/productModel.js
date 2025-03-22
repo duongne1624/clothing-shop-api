@@ -22,7 +22,7 @@ const PRODUCT_COLLECTION_SCHEMA = Joi.object({
     Joi.object({
       name: Joi.string().required().trim(),
       colorCode: Joi.string().required().pattern(/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/).message('Invalid hex color code'),
-      images: Joi.array().items(Joi.string().uri()).default([])
+      images: Joi.array().items(Joi.string().required()).default([])
     })
   ).default([]),
 

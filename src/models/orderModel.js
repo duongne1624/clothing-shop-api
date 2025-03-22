@@ -148,6 +148,8 @@ class OrderModel {
       const insertValidData = new Order(validData)
       const result = await GET_DB().collection(ORDER_COLLECTION_NAME).insertOne(insertValidData.toJSON())
 
+      if (validData.paymentMethod === 'cod') insertValidData.paymentInfo.order_url = `${insertValidData.paymentInfo.order_url}?status=1&apptransid=1&orderId=${result.insertedId}`
+
       return {
         insertedId: result.insertedId,
         paymentInfo: insertValidData.paymentInfo
@@ -161,6 +163,14 @@ class OrderModel {
     try {
       const objectId = new ObjectId(id)
       return await GET_DB().collection(ORDER_COLLECTION_NAME).findOne({ _id: objectId, _destroy: false })
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+  static async findOneByAppTransId(appTransId) {
+    try {
+      return await GET_DB().collection(ORDER_COLLECTION_NAME).findOne({ transactionId: appTransId })
     } catch (error) {
       throw new Error(error)
     }
@@ -242,6 +252,7 @@ export const orderModel = {
   getAllCompleted: OrderModel.getAllCompleted,
   createNew: OrderModel.createNew,
   findOneById: OrderModel.findOneById,
+  findOneByAppTransId: OrderModel.findOneByAppTransId,
   getDetails: OrderModel.getDetails,
   updateById: OrderModel.updateById,
   updateStatus: OrderModel.updateStatus,
