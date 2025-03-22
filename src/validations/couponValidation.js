@@ -38,7 +38,6 @@ const createNew = async (req, res, next) => {
     }),
 
     expiresAt: Joi.date().greater('now').messages({
-      'any.required': 'Expiration date is required',
       'date.greater': 'Expiration date must be in the future'
     }),
 

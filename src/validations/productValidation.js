@@ -54,7 +54,7 @@ const createNew = async (req, res, next) => {
           'any.required': 'Color name is required'
         }),
         colorCode: Joi.string().required().pattern(/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/).message('Invalid hex color code'),
-        images: Joi.array().items(Joi.string().uri()).default([]).messages({
+        images: Joi.array().items(Joi.string().required()).default([]).messages({
           'array.includes': 'Each image must be a valid URI'
         })
       })

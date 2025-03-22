@@ -9,11 +9,17 @@ import { env } from '~/config/environment.js'
 import { APIs_V1 } from '~/routes/v1'
 import { errorHandlingMiddleware } from '~/middlewares/errorHandlingMiddleware'
 import SubscriberService from '~/services/subscriberService'
+import path from 'path'
 
 const START_SERVER = () => {
   const app = express()
 
   app.use(cors(corsOptions))
+
+  app.get('/uploads/:filename', (req, res) => {
+    const filePath = path.join(__dirname, '../public/uploads', req.params.filename)
+    res.sendFile(filePath)
+  })
 
   app.use(express.json())
 

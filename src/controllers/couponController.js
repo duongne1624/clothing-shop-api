@@ -53,7 +53,7 @@ const getCouponByCode = async (req, res, next) => {
 const updateCoupon = async (req, res, next) => {
   try {
     const couponId = req.params.id
-    const updatedCoupon = await couponService.updateCoupon(couponId, req.body)
+    const updatedCoupon = await couponService.updateById(couponId, req.body)
     res.status(StatusCodes.OK).json(updatedCoupon)
   } catch (error) { next(error) }
 }
@@ -61,7 +61,7 @@ const updateCoupon = async (req, res, next) => {
 const deleteCoupon = async (req, res, next) => {
   try {
     const couponId = req.params.id
-    await couponService.deleteCoupon(couponId)
+    await couponService.deleteById(couponId)
     res.status(StatusCodes.NO_CONTENT).send()
   } catch (error) { next(error) }
 }
