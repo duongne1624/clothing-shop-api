@@ -242,6 +242,19 @@ class OrderModel {
       throw new Error(error)
     }
   }
+
+  static async getAllByUserId(userId) {
+    try {
+      const orders = await GET_DB()
+        .collection(ORDER_COLLECTION_NAME)
+        .find({ userId: userId, _destroy: false })
+        .sort({ createdAt: -1 })
+        .toArray()
+      return orders.map(order => new Order(order))
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
 }
 
 export const orderModel = {
@@ -257,5 +270,6 @@ export const orderModel = {
   updateById: OrderModel.updateById,
   updateStatus: OrderModel.updateStatus,
   updateByAppTransId: OrderModel.updateByAppTransId,
-  deleteById: OrderModel.deleteById
+  deleteById: OrderModel.deleteById,
+  getAllByUserId: OrderModel.getAllByUserId
 }

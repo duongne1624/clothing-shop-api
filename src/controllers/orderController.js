@@ -78,6 +78,15 @@ const paymentCallback = async (req, res) => {
   }
 }
 
+const getOrdersByUserId = async (req, res, next) => {
+  try {
+    const orders = await orderService.getOrdersByUserId(req.params.userId)
+    res.status(200).json(orders)
+  } catch (error) {
+    next(error)
+  }
+}
+
 export const orderController = {
   createOrder,
   getAllOrders,
@@ -85,5 +94,6 @@ export const orderController = {
   getOrderByTranId,
   updateOrderStatus,
   deleteOrder,
-  paymentCallback
+  paymentCallback,
+  getOrdersByUserId
 }

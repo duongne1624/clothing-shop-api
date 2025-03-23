@@ -12,4 +12,6 @@ router.patch('/:id/status', orderController.updateOrderStatus)
 
 router.post('/callback/:paymentGateway', orderController.paymentCallback)
 
+router.get('/user/:userId', orderController.getOrdersByUserId)
+
 export const orderRoute = router
