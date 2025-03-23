@@ -28,6 +28,10 @@ const deleteById = async (orderId) => {
   return await orderModel.deleteById(orderId)
 }
 
+const getOrdersByUserId = async (userId) => {
+  return await orderModel.getAllByUserId(userId)
+}
+
 export const orderService = {
   createOrder,
   getAllOrders,
@@ -35,5 +39,6 @@ export const orderService = {
   getOrderByTranId,
   updateOrderStatus,
   updateById,
-  deleteById
+  deleteById,
+  getOrdersByUserId
 }
