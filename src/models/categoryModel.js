@@ -84,7 +84,7 @@ class CategoryModel {
   static async findOneById(id) {
     try {
       const objectId = new ObjectId(id)
-      return await GET_DB().collection(CATEGORY_COLLECTION_NAME).findOne({ _id: objectId, _destroy: false })
+      return await GET_DB().collection(CATEGORY_COLLECTION_NAME).findOne({ _id: objectId })
     } catch (error) {
       throw new Error(error.message)
     }
@@ -93,7 +93,7 @@ class CategoryModel {
   static async GetNameById(id) {
     try {
       const objectId = new ObjectId(id)
-      const category = await GET_DB().collection(CATEGORY_COLLECTION_NAME).findOne({ _id: objectId, _destroy: false })
+      const category = await GET_DB().collection(CATEGORY_COLLECTION_NAME).findOne({ _id: objectId })
       return category.name
     } catch (error) {
       throw new Error(error.message)
@@ -137,7 +137,7 @@ class CategoryModel {
 
   static async getDetailsBySlug(slug) {
     try {
-      const category = await GET_DB().collection(CATEGORY_COLLECTION_NAME).findOne({ slug: slug, _destroy: false })
+      const category = await GET_DB().collection(CATEGORY_COLLECTION_NAME).findOne({ slug: slug })
       return category
     } catch (error) {
       throw new Error(error.message)

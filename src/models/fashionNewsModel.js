@@ -36,10 +36,7 @@ const findOneById = async (id) => {
 
 const getDetailsBySlug = async (slug) => {
   try {
-    const result = await GET_DB().collection(FASHION_NEWS_COLLECTION_NAME).findOne({
-      slug,
-      _destroy: false
-    })
+    const result = await GET_DB().collection(FASHION_NEWS_COLLECTION_NAME).findOne({ slug })
     return result
   } catch (error) {
     throw new Error(error)
