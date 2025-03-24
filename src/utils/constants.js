@@ -5,6 +5,6 @@
 // Những domain được phép truy cập đến tài nguyên của server
 export const WHITELIST_DOMAINS = [
   'http://localhost:5173',
-  'http://192.168.31.41:5173'
   // Các domain deploy nhập vào đây
+  'https://clothing-shop-web.vercel.app'
 ]
