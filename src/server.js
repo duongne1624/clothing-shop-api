@@ -17,10 +17,9 @@ const START_SERVER = () => {
 
   app.use(cors(corsOptions))
 
-  app.get('/uploads/:filename', (req, res) => {
-    const filePath = path.join(__dirname, '../public/uploads', req.params.filename)
-    res.sendFile(filePath)
-  })
+  // Phục vụ file tĩnh từ thư mục public
+  app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')))
+  app.use('/video', express.static(path.join(__dirname, '../public/video')))
 
   app.use(express.json())
 
