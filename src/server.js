@@ -17,9 +17,35 @@ const START_SERVER = () => {
 
   app.use(cors(corsOptions))
 
-  // Phục vụ file tĩnh từ thư mục public
-  app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')))
-  app.use('/video', express.static(path.join(__dirname, '../public/video')))
+  // Middleware CORS cho file tĩnh (uploads, video)
+  if (env.BUILD_MODE === 'production') {
+    app.use('/uploads', (req, res, next) => {
+      res.header('Access-Control-Allow-Origin', '*')
+      res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
+      res.header('Access-Control-Allow-Headers', 'Content-Type')
+      next()
+    }, express.static(path.join(__dirname, '../../public/uploads')))
+
+    app.use('/video', (req, res, next) => {
+      res.header('Access-Control-Allow-Origin', '*')
+      res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
+      res.header('Access-Control-Allow-Headers', 'Content-Type')
+      next()
+    }, express.static(path.join(__dirname, '../../public/video')))
+  }
+  app.use('/uploads', (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*')
+    res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
+    res.header('Access-Control-Allow-Headers', 'Content-Type')
+    next()
+  }, express.static(path.join(__dirname, '../public/uploads')))
+
+  app.use('/video', (req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*')
+    res.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS')
+    res.header('Access-Control-Allow-Headers', 'Content-Type')
+    next()
+  }, express.static(path.join(__dirname, '../public/video')))
 
   app.use(express.json())
 
@@ -30,6 +56,7 @@ const START_SERVER = () => {
   app.use(errorHandlingMiddleware)
 
   if (env.BUILD_MODE === 'production') {
+    if (process.env.PORT === undefined) process.env.PORT = 8017
     server = app.listen(process.env.PORT, () => {
       console.log(chalk.green.bold(`✅ Backend Server is running at port: ${process.env.PORT}`))
     })

@@ -1,6 +1,7 @@
 import { subscriberModel } from '~/models/subscribeModel'
 const { Subject, SendNewCouponInformationToRegisterEmail } = require('~/services/emailService')
 
+// Observer
 class SubscriberService {
   constructor() {
     this.subscribers = []
