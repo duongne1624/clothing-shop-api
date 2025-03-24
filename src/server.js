@@ -13,6 +13,7 @@ import path from 'path'
 
 const START_SERVER = () => {
   const app = express()
+  let server
 
   app.use(cors(corsOptions))
 
@@ -29,9 +30,15 @@ const START_SERVER = () => {
 
   app.use(errorHandlingMiddleware)
 
-  const server = app.listen(env.APP_PORT, env.APP_HOST, () => {
-    console.log(chalk.green.bold(`✅ Backend Server is running at http://${env.APP_HOST}:${env.APP_PORT}/`))
-  })
+  if (env.BUILD_MODE === 'production') {
+    server = app.listen(process.env.PORT, () => {
+      console.log(chalk.green.bold(`✅ Backend Server is running at port: ${process.env.PORT}`))
+    })
+  } else if (env.BUILD_MODE === 'dev') {
+    server = app.listen(env.APP_PORT, env.APP_HOST, () => {
+      console.log(chalk.green.bold(`✅ Backend Server is running at http://${env.APP_HOST}:${env.APP_PORT}/`))
+    })
+  }
 
   exitHook(async () => {
     console.log(chalk.yellow('⚠️  Shutting down server...'))
