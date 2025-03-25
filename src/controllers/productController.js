@@ -39,6 +39,14 @@ const getAllProductByCategoryId = async (req, res, next) => {
   } catch (error) { next(error) }
 }
 
+const getAllProductByCategoryType = async (req, res, next) => {
+  try {
+    const categoryId = req.params.categoryId
+    const products = await productService.getAllProductByCategoryType(categoryId)
+    res.status(StatusCodes.OK).json(products)
+  } catch (error) { next(error) }
+}
+
 const getProductsByCategorySlug = async (req, res, next) => {
   try {
     const { categorySlug } = req.params
@@ -83,6 +91,7 @@ export const productController = {
   getDetails,
   getDetailsBySlug,
   getAllProductByCategoryId,
+  getAllProductByCategoryType,
   getProductsByCategorySlug,
   updateProduct,
   deleteProduct,

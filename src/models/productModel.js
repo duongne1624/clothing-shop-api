@@ -5,6 +5,7 @@
 import { GET_DB } from '../config/mongodb'
 import Joi from 'joi'
 import { ObjectId } from 'mongodb'
+import { categoryModel } from './categoryModel'
 
 const PRODUCT_COLLECTION_NAME = 'products'
 
@@ -153,6 +154,27 @@ class ProductModel {
     }
   }
 
+  static async getAllProductByCategoryType(categoryId) {
+    try {
+      const categories = await categoryModel.getChildrenCategories(categoryId)
+      let listProduct = []
+
+      for (const category of categories) {
+        const products = await GET_DB()
+          .collection(PRODUCT_COLLECTION_NAME)
+          .find({ categoryId: category._id.toString(), _destroy: false })
+          .toArray()
+
+        listProduct = listProduct.concat(products)
+      }
+
+      return listProduct
+    } catch (error) {
+      throw new Error(error)
+    }
+  }
+
+
   static async getCategoryIdByProductId(productId) {
     try {
       const objectId = typeof productId === 'string' ? new ObjectId(productId) : productId
@@ -217,6 +239,7 @@ export const productModel = {
   getDetails: ProductModel.getDetails,
   getDetailsBySlug: ProductModel.getDetailsBySlug,
   getAllProductByCategoryId: ProductModel.getAllProductByCategoryId,
+  getAllProductByCategoryType: ProductModel.getAllProductByCategoryType,
   getCategoryIdByProductId: ProductModel.getCategoryIdByProductId,
   updateProduct: ProductModel.updateProduct,
   deleteProduct: ProductModel.deleteProduct,

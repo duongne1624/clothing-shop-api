@@ -19,6 +19,9 @@ Router.route('/GetDetailsBySlug/:slug')
 Router.route('/GetProductsByCategoryId/:categoryId')
   .get(productController.getAllProductByCategoryId)
 
+Router.route('/GetProductsByCategoryType/:categoryId')
+  .get(productController.getAllProductByCategoryType)
+
 Router.route('/GetProductsByCategorySlug/:categorySlug')
   .get(productController.getProductsByCategorySlug)
 

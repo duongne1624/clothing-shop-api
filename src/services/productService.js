@@ -64,6 +64,13 @@ const getAllProductByCategoryId = async (categoryId) => {
   } catch (error) { throw error }
 }
 
+const getAllProductByCategoryType = async (categoryId) => {
+  try {
+    const products = await productModel.getAllProductByCategoryType(categoryId)
+    return products
+  } catch (error) { throw error }
+}
+
 const getProductsByCategorySlug = async (categorySlug) => {
   try {
     // Tìm category dựa trên slug
@@ -121,6 +128,7 @@ export const productService = {
   getDetails,
   getDetailsBySlug,
   getAllProductByCategoryId,
+  getAllProductByCategoryType,
   getProductsByCategorySlug,
   updateProduct,
   deleteProduct,
