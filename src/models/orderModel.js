@@ -8,6 +8,7 @@ import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from '~/utils/validators'
 import { ObjectId } from 'mongodb'
 import { productModel } from '~/models/productModel'
 import { PaymentStrategyFactory } from '~/factories/payment.factory'
+import { sendOrderConfirmationEmail } from '~/services/emailService'
 
 const ORDER_COLLECTION_NAME = 'orders'
 
@@ -15,6 +16,7 @@ const ORDER_COLLECTION_SCHEMA = Joi.object({
   userId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE).allow(null),
   name: Joi.string().required(),
   phone: Joi.string().pattern(/^(0[0-9]{9})?$/).message('Số điện thoại không hợp lệ').required(),
+  email: Joi.string().email().allow('').default('').required(),
   address: Joi.string().required(),
   items: Joi.array()
     .items(
@@ -49,6 +51,7 @@ class Order {
     this.userId = data.userId || ''
     this.name = data.name
     this.phone = data.phone
+    this.email = data.email
     this.address = data.address
     this.items = data.items || []
     this.amount = data.amount || 0
@@ -76,6 +79,7 @@ class Order {
       userId: this.userId,
       name: this.name,
       phone: this.phone,
+      email: this.email,
       address: this.address,
       items: this.items,
       amount: this.amount,
@@ -148,7 +152,16 @@ class OrderModel {
       const insertValidData = new Order(validData)
       const result = await GET_DB().collection(ORDER_COLLECTION_NAME).insertOne(insertValidData.toJSON())
 
-      if (validData.paymentMethod === 'cod') insertValidData.paymentInfo.order_url = `${insertValidData.paymentInfo.order_url}?status=1&apptransid=1&orderId=${result.insertedId}`
+      if (validData.paymentMethod === 'cod') {
+        let products = []
+        insertValidData.id = result.insertedId
+        await Promise.all(insertValidData.items.map(async item => {
+          const product = await productModel.findOneById(item.productId)
+          products.push(product)
+        }))
+        insertValidData.paymentInfo.order_url = `${insertValidData.paymentInfo.order_url}?status=1&apptransid=1&orderId=${result.insertedId}`
+        await sendOrderConfirmationEmail(insertValidData, products)
+      }
 
       return {
         insertedId: result.insertedId,

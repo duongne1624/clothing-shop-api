@@ -6,6 +6,7 @@ export const createOrderSchema = Joi.object({
   userId: Joi.string().pattern(OBJECT_ID_RULE).message(OBJECT_ID_RULE_MESSAGE).allow(null),
   name: Joi.string().required(),
   phone: Joi.string().allow('').required(),
+  email: Joi.string().email().allow('').required(),
   address: Joi.string().required(),
   items: Joi.array().items(
     Joi.object({

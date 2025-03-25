@@ -1,6 +1,7 @@
 import CryptoJS from 'crypto-js'
 import { orderModel } from '~/models/orderModel'
-
+import { productModel } from '~/models/productModel'
+import { sendOrderConfirmationEmail } from '~/services/emailService'
 
 const config = {
   key2: 'trMrHtvjo6myautxDUiAcYsVtaeQ8nhf'
@@ -20,7 +21,13 @@ async function handleZaloPayCallback(req, res) {
       let dataJson = JSON.parse(dataStr)
 
       await orderModel.updateByAppTransId(dataJson['app_trans_id'], { status: 'success' })
-
+      const order = await orderModel.findOneByAppTransId(dataJson['app_trans_id'])
+      let products = []
+      await Promise.all(order.items.map(async item => {
+        const product = await productModel.findOneById(item.productId)
+        products.push(product)
+      }))
+      await sendOrderConfirmationEmail(order._id, products)
 
       result.return_code = 1
       result.return_message = 'success'
