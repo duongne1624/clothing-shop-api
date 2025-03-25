@@ -63,7 +63,7 @@ const sendEmail = async (to, msg) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: to,
-    subject: 'Mã giảm giá mới! TDW\'s Shop',
+    subject: 'Mã giảm giá mới! 4TREND\'s Shop',
     text: `Chào bạn! Chúng tôi rất vui mừng thông báo rằng mã giảm giá đặc biệt vừa được tạo với số lượng có hạn: ${msg}! Với mã này, bạn sẽ nhận được ưu đãi hấp dẫn khi mua sắm hoặc sử dụng dịch vụ của chúng tôi. Hãy nhanh tay áp dụng mã giảm giá tại bước thanh toán để tận hưởng ngay lợi ích tuyệt vời. Đừng bỏ lỡ cơ hội này nhé – mã có thể có thời hạn sử dụng, vì vậy hãy sử dụng sớm để không bỏ lỡ! Cảm ơn bạn đã đồng hành cùng chúng tôi!`
   }
 
@@ -101,7 +101,7 @@ export const sendConfirmationCodeEmail = async (to, code) => {
     from: process.env.EMAIL_USER,
     to,
     // eslint-disable-next-line quotes
-    subject: "Mã đăng ký tài khoản! TDW's shop",
+    subject: "Mã đăng ký tài khoản! 4TREND's shop",
     text: `Mã xác nhận của bạn là:  ${code}`
   }
 
@@ -140,7 +140,7 @@ export const sendOrderConfirmationEmail = async (order, products) => {
       
       <div style="padding: 20px; background-color: white;">
         <p>Xin chào ${order.name},</p>
-        <p>Cảm ơn bạn đã đặt hàng tại TDW's Shop. Đơn hàng của bạn đã được xác nhận:</p>
+        <p>Cảm ơn bạn đã đặt hàng tại 4TREND's Shop. Đơn hàng của bạn đã được xác nhận:</p>
         
         <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
           <p style="margin: 5px 0;"><strong>Mã đơn hàng:</strong> ${order._id || order.id}</p>
@@ -192,7 +192,7 @@ export const sendOrderConfirmationEmail = async (order, products) => {
           <li>Hotline: 1900 xxxx</li>
         </ul>
         
-        <p>Trân trọng,<br>TDW's Shop</p>
+        <p>Trân trọng,<br>4TREND's Shop</p>
       </div>
     </div>
   `
@@ -200,7 +200,7 @@ export const sendOrderConfirmationEmail = async (order, products) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: order.email || order.phone + '@gmail.com',
-    subject: `Thông tin đơn hàng #${order._id || order.id}`,
+    subject: `Thông tin đơn hàng #${order._id || order.id} | 4TREND's shop`,
     html: content
   }
 
