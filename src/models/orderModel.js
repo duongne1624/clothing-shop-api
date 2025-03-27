@@ -9,6 +9,7 @@ import { ObjectId } from 'mongodb'
 import { productModel } from '~/models/productModel'
 import { PaymentStrategyFactory } from '~/factories/payment.factory'
 import { sendOrderConfirmationEmail } from '~/services/emailService'
+import ApiError from '~/utils/ApiError'
 
 const ORDER_COLLECTION_NAME = 'orders'
 
@@ -148,6 +149,7 @@ class OrderModel {
       } else {
         validData.paymentStatus = 'failed'
         validData.paymentInfo = paymentResult.paymentInfo
+        throw new Error('Lỗi khi tạo đơn hàng')
       }
       const insertValidData = new Order(validData)
       const result = await GET_DB().collection(ORDER_COLLECTION_NAME).insertOne(insertValidData.toJSON())

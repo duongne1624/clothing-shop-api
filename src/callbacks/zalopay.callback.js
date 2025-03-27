@@ -27,7 +27,7 @@ async function handleZaloPayCallback(req, res) {
         const product = await productModel.findOneById(item.productId)
         products.push(product)
       }))
-      await sendOrderConfirmationEmail(order._id, products)
+      await sendOrderConfirmationEmail(order, products)
 
       result.return_code = 1
       result.return_message = 'success'

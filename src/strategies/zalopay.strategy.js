@@ -31,7 +31,7 @@ class ZaloPayPayment extends PaymentStrategy {
         amount: paymentData.lastAmount,
         item: JSON.stringify(items),
         embed_data: JSON.stringify(embed_data),
-        description: `TDW's Shop | Thanh toán cho đơn hàng#${transID}`,
+        description: `4TREND's Shop | Thanh toán cho đơn hàng#${transID}`,
         bank_code: 'zalopayapp',
         callback_url: `${env.CALLBACK_URL}/v1/orders/callback/zalopay`,
         name: paymentData.name,
@@ -47,10 +47,11 @@ class ZaloPayPayment extends PaymentStrategy {
       if (response.data.return_code === 1) {
         const SET_TIME = 2 * 60 * 1000
         const app_trans_id = `${moment().format('YYMMDD')}_${transID}`
+        console.log(app_trans_id)
         setTimeout(async () => {
           await getFinalStatus(app_trans_id)
         }, SET_TIME)
-        return { success: true, transactionId: `${moment().format('YYMMDD')}_${transID}`, paymentInfo: response.data }
+        return { success: true, transactionId: app_trans_id, paymentInfo: response.data }
       } else {
         return { success: false, message: response.data.return_message, paymentInfo: response.data }
       }
