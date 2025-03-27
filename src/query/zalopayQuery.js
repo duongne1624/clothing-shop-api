@@ -3,6 +3,8 @@ const axios = require('axios').default
 const CryptoJS = require('crypto-js')
 const qs = require('qs')
 import { orderModel } from '~/models/orderModel'
+import { productModel } from '~/models/productModel'
+import { sendOrderConfirmationEmail } from '~/services/emailService'
 
 export const getFinalStatus = async (app_trans_id) => {
   let postData = {
@@ -26,6 +28,13 @@ export const getFinalStatus = async (app_trans_id) => {
 
   if (response.data.return_code === 1) {
     await orderModel.updateByAppTransId(app_trans_id, { status: 'success' })
+    // const order = await orderModel.findOneByAppTransId(app_trans_id)
+    // let products = []
+    // await Promise.all(order.items.map(async item => {
+    //   const product = await productModel.findOneById(item.productId)
+    //   products.push(product)
+    // }))
+    // await sendOrderConfirmationEmail(order._id, products)
     return { message: 'success' }
   } else {
     await orderModel.updateByAppTransId(app_trans_id, { status: 'failed' })

@@ -58,27 +58,26 @@ const START_SERVER = () => {
   if (env.BUILD_MODE === 'production') {
     if (process.env.PORT === undefined) process.env.PORT = 8017
     server = app.listen(process.env.PORT, () => {
-      console.log(chalk.green.bold(`✅ Backend Server is running at port: ${process.env.PORT}`))
+      console.log(chalk.green.bold(`Backend Server is running at port: ${process.env.PORT}`))
     })
   } else if (env.BUILD_MODE === 'dev') {
     server = app.listen(env.APP_PORT, env.APP_HOST, () => {
-      console.log(chalk.green.bold(`✅ Backend Server is running at http://${env.APP_HOST}:${env.APP_PORT}/`))
+      console.log(chalk.green.bold(`Backend Server is running at http://${env.APP_HOST}:${env.APP_PORT}/`))
     })
   }
 
   exitHook(async () => {
-    console.log(chalk.yellow('⚠️  Shutting down server...'))
+    console.log(chalk.yellow('Shutting down server...'))
 
     await new Promise((resolve) => server.close(resolve))
 
-    console.log(chalk.blue('🔄 Disconnecting from MongoDB Cloud Atlas...'))
+    console.log(chalk.blue('Disconnecting from MongoDB Cloud Atlas...'))
     await CLOSE_DB()
   })
 }
 
 (async () => {
   try {
-    console.log(chalk.cyan(`👨‍💻 Made by: ${env.AUTHOR}`))
 
     await CONNECT_DB()
 

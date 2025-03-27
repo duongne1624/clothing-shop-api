@@ -18,10 +18,10 @@ const client = new MongoClient(env.MONGODB_URI, {
 
 // Singleton
 export const CONNECT_DB = async () => {
-  console.log(chalk.yellow('⏳  Connecting to MongoDB Cloud Atlas...'))
+  console.log(chalk.yellow('Connecting to MongoDB Cloud Atlas...'))
   await client.connect()
   shopDatabaseInstance = client.db(env.DATABASE_NAME)
-  console.log(chalk.green('✅  Connected to MongoDB Cloud Atlas!'))
+  console.log(chalk.green('Connected to MongoDB Cloud Atlas!'))
 }
 
 export const GET_DB = () => {

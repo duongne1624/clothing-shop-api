@@ -39,7 +39,7 @@ const calculateTotalRevenue = async (startDate, endDate) => {
   const filteredOrders = filterOrdersByDate(orders, startDate, endDate)
   const visitor = new TotalRevenueVisitor()
   filteredOrders.forEach(order => visitor.visit(order))
-  
+
   setCachedData(cacheKey, visitor.totalRevenue)
   return visitor.totalRevenue
 }
@@ -52,10 +52,10 @@ const calculateCategorySales = async (startDate, endDate) => {
   const orders = await orderModel.getAll()
   const filteredOrders = filterOrdersByDate(orders, startDate, endDate)
   const visitor = new CategorySalesVisitor(productModel)
-  
+
   await Promise.all(filteredOrders.map(order => visitor.visit(order)))
   const salesByCategoryWithNames = await replaceCategoryIdsWithNames(visitor.salesByCategory, categoryModel)
-  
+
   setCachedData(cacheKey, salesByCategoryWithNames)
   return salesByCategoryWithNames
 }
@@ -79,15 +79,14 @@ const calculateTopSellingProducts = async (startDate, endDate, limit = 5) => {
   const orders = await orderModel.getAll()
   const filteredOrders = filterOrdersByDate(orders, startDate, endDate)
   const visitor = new TopSellingProductsVisitor(productModel)
-  
+
   filteredOrders.forEach(order => visitor.visit(order))
   const topProducts = await visitor.getTopSellingProducts(limit)
-  
+
   setCachedData(cacheKey, topProducts)
   return topProducts
 }
 
-// Hàm để xóa cache khi cần
 const clearStatsCache = () => {
   statsCache.clear()
 }
