@@ -6,5 +6,6 @@
 export const WHITELIST_DOMAINS = [
   'http://localhost:5173',
   // Các domain deploy nhập vào đây
-  'https://clothing-shop-web.vercel.app'
+  'https://clothing-shop-web.vercel.app',
+  'https://www.4trendshop.site'
 ]
