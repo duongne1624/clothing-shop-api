@@ -6,6 +6,7 @@ import qs from 'qs'
 import dateFormat from 'dateformat'
 import { env } from '~/config/environment'
 import ApiError from '~/utils/ApiError'
+const moment = require('moment')
 
 class VNPayPayment extends PaymentStrategy {
   constructor() {
@@ -25,6 +26,7 @@ class VNPayPayment extends PaymentStrategy {
 
   async processPayment(paymentData, req) {
     try {
+      process.env.TZ = 'Asia/Ho_Chi_Minh'
       // Kiểm tra lại config trước khi xử lý
       if (!this.config.vnp_HashSecret) {
         throw new ApiError(500, 'Thiếu cấu hình VNPay HashSecret')
@@ -35,43 +37,65 @@ class VNPayPayment extends PaymentStrategy {
         throw new ApiError(400, 'Thiếu thông tin thanh toán')
       }
 
+      var ipAddr = req.headers['x-forwarded-for'] ||
+            req.connection.remoteAddress ||
+            req.socket.remoteAddress ||
+            req.connection.socket.remoteAddress
+
       // Tạo thông tin đơn hàng
-      const date = new Date()
-      const createDate = dateFormat(date, 'yyyymmddHHmmss')
-      const orderId = dateFormat(date, 'HHmmss')
-      const expireDate = new Date(date.getTime() + 15 * 60 * 1000)
+      let date = new Date()
+      let createDate = moment(date).format('YYYYMMDDHHmmss')
+      var orderId = dateFormat(date, 'HHmmss')
+
+      let vnpUrl = this.config.vnp_Url
 
       // Tạo params cho VNPay
-      let vnp_Params = {
-        vnp_Version: '2.1.0',
-        vnp_Command: 'pay',
-        vnp_TmnCode: this.config.vnp_TmnCode,
-        vnp_Amount: Math.round(paymentData.lastAmount * 100),
-        vnp_CreateDate: createDate,
-        vnp_CurrCode: 'VND',
-        vnp_IpAddr: req?.ipAddr || '127.0.0.1',
-        vnp_Locale: 'vn',
-        vnp_OrderInfo: `Thanh toan don hang #${orderId}`,
-        vnp_OrderType: 'other',
-        vnp_ReturnUrl: this.config.vnp_ReturnUrl,
-        vnp_TxnRef: orderId,
-        vnp_ExpireDate: dateFormat(expireDate, 'yyyymmddHHmmss')
-      }
+      // let vnp_Params = {
+      //   vnp_Version: '2.1.0',
+      //   vnp_Command: 'pay',
+      //   vnp_TmnCode: this.config.vnp_TmnCode,
+      //   vnp_Amount: Math.round(paymentData.lastAmount * 100),
+      //   vnp_CreateDate: createDate,
+      //   vnp_CurrCode: 'VND',
+      //   vnp_IpAddr: req?.ipAddr || '127.0.0.1',
+      //   vnp_Locale: 'vn',
+      //   vnp_OrderInfo: `#${orderId}`,
+      //   vnp_OrderType: 'other',
+      //   vnp_ReturnUrl: this.config.vnp_ReturnUrl,
+      //   vnp_TxnRef: orderId,
+      //   vnp_ExpireDate: dateFormat(expireDate, 'yyyymmddHHmmss')
+      // }
+
+      let currCode = 'VND'
+      let vnp_Params = {}
+      vnp_Params['vnp_Version'] = '2.1.0'
+      vnp_Params['vnp_Command'] = 'pay'
+      vnp_Params['vnp_TmnCode'] = this.config.vnp_TmnCode
+      vnp_Params['vnp_Locale'] = 'vn'
+      vnp_Params['vnp_CurrCode'] = currCode
+      vnp_Params['vnp_TxnRef'] = orderId
+      vnp_Params['vnp_OrderInfo'] = 'Thanh toan don hang:' + orderId
+      vnp_Params['vnp_OrderType'] = 'other'
+      vnp_Params['vnp_Amount'] = Math.round(paymentData.lastAmount * 100)
+      vnp_Params['vnp_ReturnUrl'] = paymentData.redirecturl
+      vnp_Params['vnp_IpAddr'] = ipAddr
+      vnp_Params['vnp_CreateDate'] = createDate
+
 
       // Thêm bankCode nếu có
       if (paymentData.bankCode) {
         vnp_Params['vnp_BankCode'] = paymentData.bankCode
       }
 
-      // Sắp xếp params và tạo chữ ký
-      vnp_Params = this.sortObject(vnp_Params)
-      const signData = qs.stringify(vnp_Params, { encode: false })
-      const hmac = crypto.createHmac('sha512', this.config.vnp_HashSecret)
-      const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex')
-      vnp_Params['vnp_SecureHash'] = signed
+      vnp_Params = sortObject(vnp_Params)
 
-      // Tạo URL thanh toán
-      const vnpUrl = `${this.config.vnp_Url}?${qs.stringify(vnp_Params, { encode: false })}`
+      let querystring = require('qs')
+      let signData = querystring.stringify(vnp_Params, { encode: false })
+      let crypto = require('crypto')
+      let hmac = crypto.createHmac('sha512', this.config.vnp_HashSecret)
+      let signed = hmac.update(new Buffer(signData, 'utf-8')).digest('hex')
+      vnp_Params['vnp_SecureHash'] = signed
+      vnpUrl += '?' + querystring.stringify(vnp_Params, { encode: false })
 
       return {
         success: true,
@@ -170,6 +194,23 @@ class VNPayPayment extends PaymentStrategy {
     }
     return messageMap[responseCode] || 'Lỗi không xác định'
   }
+}
+
+function sortObject(obj) {
+  let sorted = {}
+  let str = []
+  let key
+  for (key in obj) {
+    // eslint-disable-next-line no-prototype-builtins
+    if (obj.hasOwnProperty(key)) {
+      str.push(encodeURIComponent(key))
+    }
+  }
+  str.sort()
+  for (key = 0; key < str.length; key++) {
+    sorted[str[key]] = encodeURIComponent(obj[str[key]]).replace(/%20/g, '+')
+  }
+  return sorted
 }
 
 export default VNPayPayment
