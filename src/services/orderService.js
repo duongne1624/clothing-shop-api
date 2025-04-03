@@ -1,7 +1,9 @@
+// Order service
+
 import { orderModel } from '~/models/orderModel'
 
-const createOrder = async (orderData) => {
-  return await orderModel.createNew(orderData)
+const createOrder = async (orderData, req) => {
+  return await orderModel.createNew(orderData, req)
 }
 
 const getAllOrders = async () => {

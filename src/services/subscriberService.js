@@ -47,6 +47,10 @@ class SubscriberService {
 
   async getSubscribers() {
     this.subscribers = await subscriberModel.getAll()
+    this.subscribers.map(subscriber => {
+      const observer = new SendNewCouponInformationToRegisterEmail(subscriber.email)
+      this.subject.register(observer)
+    })
     return this.subscribers
   }
 }

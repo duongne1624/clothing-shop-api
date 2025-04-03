@@ -219,6 +219,18 @@ class ProductModel {
     }
   }
 
+  static async updateStock(items) {
+    for (const item of items) {
+      const objectId = typeof item.productId === 'string' ? new ObjectId(item.productId) : item.productId
+      const product = await GET_DB().collection(PRODUCT_COLLECTION_NAME).findOne({ _id: objectId })
+      if (product) {
+        product.stock -= item.quantity
+        product.sold += item.quantity
+        await GET_DB().collection(PRODUCT_COLLECTION_NAME).updateOne({ _id: objectId }, { $set: { stock: product.stock } })
+      }
+    }
+  }
+
   static async searchByKeyword(keyword) {
     const regex = new RegExp(keyword, 'i')
     const products = await GET_DB().collection(PRODUCT_COLLECTION_NAME).find({
@@ -242,6 +254,7 @@ export const productModel = {
   getAllProductByCategoryType: ProductModel.getAllProductByCategoryType,
   getCategoryIdByProductId: ProductModel.getCategoryIdByProductId,
   updateProduct: ProductModel.updateProduct,
+  updateStock: ProductModel.updateStock,
   deleteProduct: ProductModel.deleteProduct,
   searchByKeyword: ProductModel.searchByKeyword
 }

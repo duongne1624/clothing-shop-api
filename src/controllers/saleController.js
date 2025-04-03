@@ -22,7 +22,7 @@ const getCategorySales = async (req, res) => {
 
 const getTopSellingProducts = async (req, res) => {
   try {
-    const { startDate, endDate, limit = 5 } = req.query
+    const { startDate, endDate, limit = 3 } = req.query
     const topProducts = await saleService.calculateTopSellingProducts(startDate, endDate, parseInt(limit))
     res.json({ topProducts })
   } catch (error) {

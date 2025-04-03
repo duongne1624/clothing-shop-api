@@ -25,11 +25,11 @@ const createNew = async (req, res, next) => {
       'number.min': 'Discount value must be greater than 0'
     }),
 
-    minOrder: Joi.number().min(0).default(0).messages({
+    minOrder: Joi.number().min(0).allow(null).default(0).messages({
       'number.min': 'Minimum order value cannot be negative'
     }),
 
-    maxDiscount: Joi.number().min(0).messages({
+    maxDiscount: Joi.number().min(0).allow(null).messages({
       'number.min': 'Maximum discount cannot be negative'
     }),
 
@@ -37,7 +37,7 @@ const createNew = async (req, res, next) => {
       'number.min': 'Usage limit must be at least 1'
     }),
 
-    expiresAt: Joi.date().greater('now').messages({
+    expiresAt: Joi.date().greater('now').allow(null).messages({
       'date.greater': 'Expiration date must be in the future'
     }),
 

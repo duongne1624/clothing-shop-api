@@ -10,12 +10,11 @@ import { APIs_V1 } from '~/routes/v1'
 import { errorHandlingMiddleware } from '~/middlewares/errorHandlingMiddleware'
 import SubscriberService from '~/services/subscriberService'
 import path from 'path'
+import formatIpAddress from '~/middlewares/ipMiddleware'
 
 const START_SERVER = () => {
   const app = express()
   let server
-
-  app.use(cors(corsOptions))
 
   // Middleware CORS cho file tĩnh (uploads, video)
   if (env.BUILD_MODE === 'production') {
@@ -46,6 +45,9 @@ const START_SERVER = () => {
     res.header('Access-Control-Allow-Headers', 'Content-Type')
     next()
   }, express.static(path.join(__dirname, '../public/video')))
+
+  app.use(cors(corsOptions))
+  app.use(formatIpAddress)
 
   app.use(express.json())
 

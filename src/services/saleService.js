@@ -71,7 +71,7 @@ const replaceCategoryIdsWithNames = async (salesByCategory, categoryModel) => {
   return newSalesByCategory
 }
 
-const calculateTopSellingProducts = async (startDate, endDate, limit = 5) => {
+const calculateTopSellingProducts = async (startDate, endDate, limit = 3) => {
   const cacheKey = getCacheKey('top-products', startDate, endDate)
   const cachedData = getCachedData(cacheKey)
   if (cachedData) return cachedData

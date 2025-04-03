@@ -1,6 +1,4 @@
-/**
- * Updated by ThaiDuowng's author on Mar 06 2025
- */
+// Order model
 
 import { GET_DB } from '../config/mongodb'
 import Joi from 'joi'
@@ -10,6 +8,7 @@ import { productModel } from '~/models/productModel'
 import { PaymentStrategyFactory } from '~/factories/payment.factory'
 import { sendOrderConfirmationEmail } from '~/services/emailService'
 import ApiError from '~/utils/ApiError'
+import { createOrderValidator } from '~/validators/orderValidator'
 
 const ORDER_COLLECTION_NAME = 'orders'
 
@@ -133,14 +132,19 @@ class OrderModel {
     }
   }
 
-  static async createNew(data) {
+  static async createNew(data, req) {
     try {
       const validData = await ORDER_COLLECTION_SCHEMA.validateAsync(data, { abortEarly: false })
       validData.createdAt = Date.now()
       validData.updatedAt = null
 
+      // Chain of Responsibility
+      const validator = createOrderValidator()
+      await validator.validate(validData)
+
+      // Factory + Strategy
       const paymentStrategy = PaymentStrategyFactory.create(data.paymentMethod)
-      const paymentResult = await paymentStrategy.processPayment(data)
+      const paymentResult = await paymentStrategy.processPayment(data, req)
 
       if (paymentResult.success) {
         validData.transactionId = paymentResult.transactionId
@@ -149,10 +153,11 @@ class OrderModel {
       } else {
         validData.paymentStatus = 'failed'
         validData.paymentInfo = paymentResult.paymentInfo
-        throw new Error('Lỗi khi tạo đơn hàng')
+        throw new ApiError(400, 'Lỗi khi tạo đơn hàng')
       }
       const insertValidData = new Order(validData)
       const result = await GET_DB().collection(ORDER_COLLECTION_NAME).insertOne(insertValidData.toJSON())
+      await productModel.updateStock(insertValidData.items)
 
       if (validData.paymentMethod === 'cod') {
         let products = []
@@ -170,7 +175,7 @@ class OrderModel {
         paymentInfo: insertValidData.paymentInfo
       }
     } catch (error) {
-      throw new Error(error)
+      throw new ApiError(400, error.message)
     }
   }
 

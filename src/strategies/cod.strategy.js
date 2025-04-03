@@ -1,7 +1,9 @@
+// Phương thức thanh toán COD
+
 import PaymentStrategy from './payment.strategy'
 
 class CodPayment extends PaymentStrategy {
-  async processPayment(paymentData) {
+  async processPayment(paymentData, req) {
     return { success: true, transactionId: null, paymentInfo: {
       return_code: 1,
       return_message: 'Giao dịch thành công',

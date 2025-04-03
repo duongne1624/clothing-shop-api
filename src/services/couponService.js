@@ -6,6 +6,7 @@
 import { couponModel } from '~/models/couponModel'
 import ApiError from '~/utils/ApiError'
 import { StatusCodes } from 'http-status-codes'
+const subscriberService = require('~/services/subscriberService')
 
 const getAll = async () => {
   try {
@@ -14,10 +15,14 @@ const getAll = async () => {
   } catch (error) { throw error }
 }
 
+// Phương thức tạo mới một coupon
 const createNew = async (reqBody) => {
   try {
     const createdCoupon = await couponModel.createNew(reqBody)
     const getNewCoupon = await couponModel.findOneById(createdCoupon.insertedId.toString())
+    // Gửi thông báo đến người đăng ký
+    console.log('Gửi email đến người đăng ký')
+    await subscriberService.notifyAll(getNewCoupon.code)
     return getNewCoupon
   } catch (error) { throw error }
 }

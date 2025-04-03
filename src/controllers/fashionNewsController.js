@@ -54,4 +54,4 @@ export const fashionNewsController = {
   getDetailsBySlug,
   update,
   deleteNews
-} 
+}

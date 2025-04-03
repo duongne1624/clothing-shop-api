@@ -9,5 +9,9 @@ export const env = {
 
   BUILD_MODE: process.env.BUILD_MODE,
 
+  VNP_TMNCODE: process.env.VNP_TMNCODE,
+  VNP_HASHSECRET: process.env.VNP_HASHSECRET,
+  VNP_URL: process.env.VNP_URL,
+
   AUTHOR: process.env.AUTHOR
 }

@@ -10,7 +10,7 @@ const COUPON_COLLECTION_NAME = 'coupons'
 
 const COUPON_COLLECTION_SCHEMA = Joi.object({
   code: Joi.string().required().trim().uppercase(),
-  type: Joi.string().valid('percent', 'fixed').required(),
+  type: Joi.string().valid('percentage', 'fixed').required(),
   value: Joi.number().required().min(1),
   maxDiscount: Joi.number().min(0).default(null),
   minOrder: Joi.number().min(0).default(0),

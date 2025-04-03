@@ -7,7 +7,7 @@ import handleVNPayCallback from '~/callbacks/vnpay.callback'
 const createOrder = async (req, res, next) => {
   try {
     const validatedOrder = await createOrderSchema.validateAsync(req.body, { abortEarly: false })
-    const newOrder = await orderService.createOrder(validatedOrder)
+    const newOrder = await orderService.createOrder(validatedOrder, req)
     res.status(201).json({ message: 'Đơn hàng đã được tạo!', order: newOrder })
   } catch (error) {
     next(error)

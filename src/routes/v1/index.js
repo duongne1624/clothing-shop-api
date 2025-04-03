@@ -1,3 +1,5 @@
+// general routes
+
 import express from 'express'
 import { StatusCodes } from 'http-status-codes'
 import { productRoute } from './productRoute'

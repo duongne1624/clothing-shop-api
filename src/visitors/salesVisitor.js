@@ -20,8 +20,9 @@ class CategorySalesVisitor extends SalesVisitor {
   constructor(productModel) {
     super()
     this.salesByCategory = {}
+    this.salesByProductId = {}
     this.productModel = productModel
-    this.categoryCache = new Map() // Cache để lưu categoryId
+    this.categoryCache = new Map()
   }
 
   async visit(order) {
@@ -46,7 +47,7 @@ class TopSellingProductsVisitor extends SalesVisitor {
     super()
     this.productSales = {}
     this.productModel = productModel
-    this.productCache = new Map() // Cache để lưu thông tin sản phẩm
+    this.productCache = new Map()
   }
 
   visit(order) {

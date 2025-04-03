@@ -1,3 +1,5 @@
+// Phương thức thanh toán zalopay
+
 import PaymentStrategy from './payment.strategy'
 import axios from 'axios'
 import CryptoJS from 'crypto-js'
@@ -6,7 +8,7 @@ import { env } from '~/config/environment'
 import { getFinalStatus } from '~/query/zalopayQuery'
 
 class ZaloPayPayment extends PaymentStrategy {
-  async processPayment(paymentData) {
+  async processPayment(paymentData, req) {
     try {
       // APP INFO
       const config = {
@@ -47,7 +49,6 @@ class ZaloPayPayment extends PaymentStrategy {
       if (response.data.return_code === 1) {
         const SET_TIME = 2 * 60 * 1000
         const app_trans_id = `${moment().format('YYMMDD')}_${transID}`
-        console.log(app_trans_id)
         setTimeout(async () => {
           await getFinalStatus(app_trans_id)
         }, SET_TIME)
