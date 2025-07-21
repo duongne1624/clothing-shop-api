@@ -1,24 +1,6 @@
-import crypto from 'crypto'
 import { orderModel } from '~/models/orderModel'
 import { productModel } from '~/models/productModel'
 import { sendOrderConfirmationEmail } from '~/services/emailService'
-
-const config = {
-  secretKey: process.env.VNPAY_SECRET_KEY,
-  tmnCode: process.env.VNPAY_TMN_CODE
-}
-
-function sortObject(obj) {
-  const sorted = {}
-  const keys = Object.keys(obj).sort()
-
-  for (const key of keys) {
-    if (obj[key]) {
-      sorted[key] = obj[key]
-    }
-  }
-  return sorted
-}
 
 async function handleVNPayCallback(req, res) {
   let result = {}

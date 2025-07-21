@@ -115,7 +115,7 @@ class CouponModel {
     try {
       return await GET_DB().collection(COUPON_COLLECTION_NAME).updateOne(
         { code },
-        { $inc: { usedCount: 1 }, $set: { updatedAt: Date.now() } }
+        { $inc: { usedCount: 1, usageLimit: -1 }, $set: { updatedAt: Date.now() } }
       )
     } catch (error) {
       throw new Error(error)

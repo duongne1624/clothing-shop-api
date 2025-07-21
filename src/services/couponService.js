@@ -39,6 +39,8 @@ const getCouponByCode = async (code) => {
   try {
     const coupon = await couponModel.findOneByCode(code)
     if (!coupon) throw new ApiError(StatusCodes.NOT_FOUND, 'Coupon not found')
+
+    await couponModel.incrementUsage(code)
     return coupon
   } catch (error) { throw error }
 }
@@ -70,6 +72,7 @@ const applyCoupon = async (code, totalAmount) => {
     const discount = coupon.discountType === 'percentage'
       ? (totalAmount * coupon.discountValue) / 100
       : coupon.discountValue
+
     return {
       discount: Math.min(discount, coupon.maxDiscount || discount),
       finalAmount: totalAmount - Math.min(discount, coupon.maxDiscount || discount)
